@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FinanceTech - Login</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <main class="login-container">
+
+        <div class="logo">
+            <h1>FinanceTech</h1>
+            <p>Controle suas finanças de forma simples.</p>
+        </div>
+
+        <form method="POST" action="/login">
+
+            <div class="campo">
+                <label for="email">E-mail</label>
+
+                <!--  name="email" -->
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="Digite seu e-mail"
+                    required
+                >
+            </div>
+
+            <div class="campo">
+                <label for="senha">Senha</label>
+
+                <!--  name="senha" -->
+                <input
+                    type="password"
+                    id="senha"
+                    name="senha"
+                    placeholder="Digite sua senha"
+                    required
+                >
+            </div>
+
+            <button type="submit">
+                Entrar
+            </button>
+
+        </form>
+
+        <p class="cadastro">
+            Ainda não possui uma conta?
+            <a href="{{ url_for('cadastro') }}">Cadastre-se</a>
+        </p>
+        
+    </main>
+
+</body>
+
+</html>
