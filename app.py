@@ -337,6 +337,15 @@ def dashboard():
             for t in despesas_ano
         )
 
+        cursor.execute(
+            """
+            SELECT *
+            FROM categorias
+            ORDER BY nome
+            """
+        )
+        categorias = cursor.fetchall()
+
         return render_template(
             "dashboard.html",
             usuario=usuario_nome,
@@ -348,7 +357,8 @@ def dashboard():
             saldo=saldo,
             despesas_categoria=despesas_categoria,
             despesas_ano=despesas_ano,
-            total_despesas_ano=total_despesas_ano
+            total_despesas_ano=total_despesas_ano,
+            categorias=categorias
         )
 
     except Error as e:

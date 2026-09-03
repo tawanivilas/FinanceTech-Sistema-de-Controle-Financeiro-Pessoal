@@ -1,1264 +1,268 @@
 <!DOCTYPE html>
-
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinanceTech - Controle Financeiro</title>
+    <title>FinanceTech - Dashboard</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; margin: 0; background-color: #f4f6f9; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: #333; color: #fff; padding: 12px 20px; }
+        .header a { color: #ff6b6b; text-decoration: none; font-weight: bold; }
+        
+        .main-layout { display: flex; min-height: calc(100vh - 60px); }
+        
+        /* Menu Lateral de Meses */
+        .sidebar { width: 220px; background: #fff; border-right: 1px solid #ddd; padding: 15px; }
+        .sidebar h4 { margin-top: 0; color: #555; }
+        .sidebar ul { list-style: none; padding: 0; margin: 0; }
+        .sidebar li { margin-bottom: 8px; }
+        .sidebar a { display: block; padding: 8px 12px; border-radius: 4px; color: #333; text-decoration: none; background: #f8f9fa; }
+        .sidebar a:hover, .sidebar a.active { background: #007bff; color: white; font-weight: bold; }
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-    :root {
-        --bg-body: #f8fafc;
-        --surface: #ffffff;
-        --sidebar-bg: #0f172a;
-        --sidebar-text: #94a3b8;
-        --sidebar-active: #2563eb;
-        --primary: #2563eb;
-        --text-main: #0f172a;
-        --text-muted: #64748b;
-        --border-color: #e2e8f0;
-    }
-
-    body {
-        background-color: var(--bg-body);
-        color: var(--text-main);
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-        overflow-x: hidden;
-    }
-
-    /* ==============================
-       MENU LATERAL
-    ============================== */
-
-    .sidebar {
-        min-height: 100vh;
-        background-color: var(--sidebar-bg);
-        color: var(--sidebar-text);
-    }
-
-    .sidebar .brand {
-        color: #ffffff;
-        font-size: 1.25rem;
-        font-weight: 700;
-        padding: 1rem 0.5rem;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .sidebar .nav-link {
-        color: var(--sidebar-text);
-        padding: 0.75rem 1rem;
-        border-radius: 8px;
-        margin-bottom: 0.25rem;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-weight: 500;
-        text-decoration: none;
-    }
-
-    .sidebar .nav-link:hover {
-        color: #ffffff;
-        background-color: rgba(255, 255, 255, 0.05);
-    }
-
-    .sidebar .nav-link.active {
-        background-color: var(--sidebar-active);
-        color: #ffffff;
-    }
-
-    /* ==============================
-       TOPBAR
-    ============================== */
-
-    .top-header {
-        background-color: var(--surface);
-        border-bottom: 1px solid var(--border-color);
-        padding: 0.8rem 1.5rem;
-    }
-
-    /* ==============================
-       CARDS
-    ============================== */
-
-    .card-custom {
-        background: var(--surface);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 1.25rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .card-custom:hover {
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
-    }
-
-    .metric-title {
-        color: var(--text-muted);
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.025em;
-    }
-
-    .metric-value {
-        font-size: 1.6rem;
-        font-weight: 700;
-        margin-top: 0.25rem;
-    }
-
-    /* ==============================
-       GRÁFICO
-    ============================== */
-
-    .chart-container {
-        position: relative;
-        height: 240px;
-        width: 100%;
-    }
-
-    /* ==============================
-       FORMULÁRIOS
-    ============================== */
-
-    .form-control,
-    .form-select {
-        background-color: #f8fafc;
-        border: 1px solid var(--border-color);
-        color: var(--text-main);
-    }
-
-    .form-control:focus,
-    .form-select:focus {
-        background-color: #ffffff;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.15);
-    }
-</style>
-
-
+        .content { flex: 1; padding: 20px; }
+        .card-form { background: white; padding: 20px; border-radius: 5px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .form-row { display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; }
+        .form-group { display: flex; flex-direction: column; }
+        label { margin-bottom: 5px; font-weight: bold; font-size: 13px; }
+        input, select, button { padding: 8px; border-radius: 4px; border: 1px solid #ccc; }
+        button { background-color: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; height: 36px; padding: 0 18px; }
+        
+        table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        
+        .status-pago { color: #28a745; font-weight: bold; background: #e6f4ea; padding: 3px 8px; border-radius: 12px; font-size: 12px; }
+        .status-pendente { color: #dc3545; font-weight: bold; background: #fce8e6; padding: 3px 8px; border-radius: 12px; font-size: 12px; }
+        .btn-edit { background: #ffc107; color: #333; padding: 5px 10px; text-decoration: none; border-radius: 3px; font-size: 12px; font-weight: bold; margin-right: 5px; border: none; cursor: pointer; }
+        .btn-delete { background: #dc3545; color: white; padding: 5px 10px; text-decoration: none; border-radius: 3px; font-size: 12px; font-weight: bold; }
+        
+        /* Modal de Edição */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 5px; width: 400px; }
+    </style>
 </head>
-
 <body>
 
-<div class="container-fluid p-0">
-
-<div class="row g-0">
-
-    <!-- ==========================================
-         SIDEBAR
-         APENAS VISÃO GERAL E METAS
-    =========================================== -->
-
-    <div class="col-md-2 sidebar p-3 d-flex flex-column justify-content-between">
-
+    <div class="header">
+        <h2>FinanceTech</h2>
         <div>
-
-            <!-- LOGO -->
-            <div class="brand">
-                <i class="fa-solid fa-wallet text-primary"></i>
-                <span>FinanceTech</span>
-            </div>
-
-            <hr class="border-secondary my-3">
-
-            <!-- MENU -->
-            <nav class="nav flex-column">
-
-                <!-- VISÃO GERAL -->
-                <a class="nav-link active" href="{{ url_for('dashboard') }}">
-                    <i class="fa-solid fa-chart-pie"></i>
-                    <span>Visão Geral</span>
-                </a>
-
-                <!-- METAS -->
-                <a class="nav-link" href="{{ url_for('metas') }}">
-                    <i class="fa-solid fa-bullseye"></i>
-                    <span>Metas</span>
-                </a>
-
-            </nav>
-
+            <span>Olá, <strong>{{ usuario }}</strong>!</span> | 
+            <a href="/logout">Sair</a>
         </div>
-
-        <!-- SAIR -->
-        <div>
-
-            <hr class="border-secondary">
-
-            <a href="{{ url_for('logout') }}" class="nav-link text-danger">
-                <i class="fa-solid fa-right-from-bracket"></i>
-                <span>Sair</span>
-            </a>
-
-        </div>
-
     </div>
 
+    <div class="main-layout">
+        <!-- Menu Lateral: 12 Meses -->
+        <div class="sidebar">
+            <h4>📅 Consultar Mês</h4>
+            <ul>
+                {% for m in meses %}
+                <li>
+                    <a href="/dashboard?mes={{ m.codigo }}" class="{% if m.codigo == mes_atual %}active{% endif %}">
+                        {{ m.nome }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
 
-    <!-- ==========================================
-         ÁREA PRINCIPAL
-    =========================================== -->
-
-    <div class="col-md-10 d-flex flex-column" style="min-height: 100vh;">
-
-        <!-- CABEÇALHO -->
-        <header class="top-header d-flex justify-content-between align-items-center">
-
-            <!-- SELETOR DE PERÍODO -->
-            <div class="d-flex align-items-center gap-2">
-
-                <span class="text-muted small fw-semibold">
-                    Período:
-                </span>
-
-                <div class="dropdown">
-
-                    <button
-                        class="btn btn-light btn-sm border dropdown-toggle fw-bold"
-                        type="button"
-                        data-bs-toggle="dropdown">
-
-                        <i class="fa-regular fa-calendar me-1"></i>
-
-                        {% for m in meses %}
-                            {% if m.codigo == mes_atual %}
-                                {{ m.nome }}
-                            {% endif %}
-                        {% endfor %}
-
-                    </button>
-
-                    <ul class="dropdown-menu shadow-sm">
-
-                        {% for m in meses %}
-
-                            <li>
-
-                                <a
-                                    class="dropdown-item {% if m.codigo == mes_atual %}active{% endif %}"
-                                    href="{{ url_for('dashboard', mes=m.codigo) }}">
-
-                                    {{ m.nome }}
-
-                                </a>
-
-                            </li>
-
-                        {% endfor %}
-
-                    </ul>
-
-                </div>
-
-            </div>
-
-
-            <!-- AÇÕES E PERFIL -->
-            <div class="d-flex align-items-center gap-3">
-
-                <!-- NOVA TRANSAÇÃO -->
-                <button
-                    class="btn btn-primary btn-sm fw-semibold"
-                    data-bs-toggle="modal"
-                    data-bs-target="#modalNovaTransacao">
-
-                    <i class="fa-solid fa-plus me-1"></i>
-                    Nova Transação
-
-                </button>
-
-                <div class="vr"></div>
-
-                <!-- PERFIL -->
-                <div class="d-flex align-items-center gap-2">
-
-                    <div
-                        class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
-                        style="width: 34px; height: 34px; font-weight: 600;">
-
-                        {{ usuario[0]|upper }}
-
-                    </div>
-
-                    <span class="fw-semibold small">
-                        Olá, {{ usuario }}
-                    </span>
-
-                </div>
-
-            </div>
-
-        </header>
-
-
-        <!-- ==========================================
-             CONTEÚDO DO DASHBOARD
-        =========================================== -->
-
-        <main class="p-4 flex-grow-1">
-
-            <!-- CARDS DE TOTAIS -->
-            <div class="row g-3 mb-4">
-
-                <!-- RECEITAS -->
-                <div class="col-md-4">
-
-                    <div class="card-custom">
-
-                        <span class="metric-title">
-                            Total de Receitas
-                        </span>
-
-                        <div class="metric-value text-success">
-                            R$ {{ "%.2f"|format(total_receitas) }}
+        <!-- Conteúdo Principal -->
+        <div class="content">
+            <div class="card-form">
+                <h3>Nova Transação (Mês {{ mes_atual }})</h3>
+                <form action="/nova-transacao" method="POST">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Descrição</label>
+                            <input type="text" name="descricao" required placeholder="Ex: Conta de Luz">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Valor (R$)</label>
+                            <input type="number" step="0.01" name="valor" required placeholder="150.00">
                         </div>
 
-                    </div>
-
-                </div>
-
-
-                <!-- DESPESAS -->
-                <div class="col-md-4">
-
-                    <div class="card-custom">
-
-                        <span class="metric-title">
-                            Total de Despesas
-                        </span>
-
-                        <div class="metric-value text-danger">
-                            R$ {{ "%.2f"|format(total_despesas) }}
+                        <div class="form-group">
+                            <label>Tipo</label>
+                            <select name="tipo" id="tipo" onchange="toggleCamposDespesa()" required>
+                                <option value="despesa">Despesa</option>
+                                <option value="receita">Receita</option>
+                            </select>
                         </div>
 
-                    </div>
-
-                </div>
-
-
-                <!-- SALDO -->
-                <div class="col-md-4">
-
-                    <div class="card-custom">
-
-                        <span class="metric-title">
-                            Saldo do Mês
-                        </span>
-
-                        <div class="metric-value {% if saldo_mes >= 0 %}text-primary{% else %}text-warning{% endif %}">
-                            R$ {{ "%.2f"|format(saldo_mes) }}
+                        <div class="form-group" id="group-subtipo">
+                            <label>Classificação</label>
+                            <select name="subtipo_despesa" id="subtipo_despesa" onchange="toggleCamposTemporarios()">
+                                <option value="fixa">Fixa</option>
+                                <option value="variavel">Variável</option>
+                                <option value="temporaria">Temporária (Com Prazo)</option>
+                            </select>
                         </div>
 
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- GRÁFICO E RESUMO -->
-            <div class="row g-3 mb-4">
-
-                <!-- GRÁFICO -->
-                <div class="col-md-6">
-
-                    <div class="card-custom">
-
-                        <h6 class="fw-bold mb-3">
-                            Despesas no Mês por Categoria
-                        </h6>
-
-                        <div
-                            class="chart-container"
-                            id="dataContainerMes"
-                            data-labels='{{ despesas_cat_mes.keys()|list|tojson }}'
-                            data-values='{{ despesas_cat_mes.values()|list|tojson }}'>
-
-                            <canvas id="chartDespesasMes"></canvas>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- RESUMO -->
-                <div class="col-md-6">
-
-                    <div class="card-custom h-100 d-flex flex-column justify-content-center p-4">
-
-                        <h6 class="fw-bold mb-2">
-
-                            <i class="fa-solid fa-lightbulb text-warning me-1"></i>
-
-                            Resumo de Balanço
-
-                        </h6>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- TABELA DE LANÇAMENTOS -->
-            <div class="card-custom">
-
-                <h6 class="fw-bold mb-3">
-                    Lançamentos do Mês
-                </h6>
-
-                <div class="table-responsive">
-
-                    <table class="table table-hover align-middle mb-0">
-
-                        <thead class="table-light">
-
-                            <tr>
-                                <th>Data</th>
-                                <th>Descrição</th>
-                                <th>Categoria</th>
-                                <th>Valor</th>
-                                <th>Status</th>
-                                <th>Parcela</th>
-                                <th class="text-end">Ações</th>
-                            </tr>
-
-                        </thead>
-
-                        <tbody>
-
-                            {% if transacoes %}
-
-                                {% for t in transacoes %}
-
-                                    <tr>
-
-                                        <!-- DATA -->
-                                        <td class="small">
-                                            {{ t.data_transacao }}
-                                        </td>
-
-                                        <!-- DESCRIÇÃO -->
-                                        <td>
-                                            <strong>
-                                                {{ t.descricao }}
-                                            </strong>
-                                        </td>
-
-                                        <!-- CATEGORIA -->
-                                        <td>
-
-                                            <span class="badge bg-light text-dark border">
-                                                {{ t.categoria or 'Geral' }}
-                                            </span>
-
-                                        </td>
-
-                                        <!-- VALOR -->
-                                        <td class="{% if t.tipo == 'receita' %}text-success{% else %}text-danger{% endif %} fw-bold">
-
-                                            {% if t.tipo == 'receita' %}
-                                                +
-                                            {% else %}
-                                                -
-                                            {% endif %}
-
-                                            R$ {{ "%.2f"|format(t.valor) }}
-
-                                        </td>
-
-                                        <!-- STATUS -->
-                                        <td>
-
-                                            {% if t.pago %}
-
-                                                <span class="badge bg-success-subtle text-success border border-success-subtle">
-                                                    ✓ Pago
-                                                </span>
-
-                                            {% else %}
-
-                                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">
-                                                    Pendente
-                                                </span>
-
-                                            {% endif %}
-
-                                        </td>
-
-                                        <!-- PARCELA -->
-                                        <td>
-
-                                            {% if t.subtipo_despesa == 'temporaria' and t.total_parcelas %}
-
-                                                <span class="badge bg-info-subtle text-info-emphasis">
-                                                    {{ t.parcela_atual }}/{{ t.total_parcelas }}
-                                                </span>
-
-                                            {% else %}
-
-                                                <span class="text-muted">
-                                                    —
-                                                </span>
-
-                                            {% endif %}
-
-                                        </td>
-
-                                        <!-- AÇÕES -->
-                                        <td class="text-end">
-
-                                            <!-- EDITAR -->
-                                            <button
-                                                class="btn btn-sm btn-outline-primary me-1"
-                                                title="Editar"
-                                                onclick="abrirModalEdicao(
-                                                    '{{ t.id }}',
-                                                    '{{ t.descricao }}',
-                                                    '{{ t.valor }}',
-                                                    '{{ t.tipo }}',
-                                                    '{{ t.categoria_id }}',
-                                                    '{{ t.data_transacao }}',
-                                                    '{{ t.pago }}'
-                                                )">
-
-                                                <i class="fa-solid fa-pen-to-square"></i>
-
-                                            </button>
-
-                                            <!-- EXCLUIR -->
-                                            <a
-                                                href="{{ url_for('deletar_transacao', id=t.id, mes=mes_atual) }}"
-                                                class="btn btn-sm btn-outline-danger"
-                                                onclick="return confirm('Excluir transação?')">
-
-                                                <i class="fa-solid fa-trash-can"></i>
-
-                                            </a>
-
-                                        </td>
-
-                                    </tr>
-
+                        <div class="form-group">
+                            <label>Categoria</label>
+                            <select name="categoria_id" required>
+                                {% for cat in categorias %}
+                                    <option value="{{ cat.id }}">{{ cat.nome }}</option>
                                 {% endfor %}
+                            </select>
+                        </div>
 
-                            {% else %}
+                        <div class="form-group">
+                            <label>Data</label>
+                            <input type="date" name="data_transacao" required>
+                        </div>
 
-                                <tr>
+                        <div class="form-group" style="flex-direction: row; align-items: center; gap: 5px; height: 36px;">
+                            <input type="checkbox" id="pago" name="pago" value="1" style="margin: 0;">
+                            <label for="pago" style="margin: 0; cursor: pointer;">Pago</label>
+                        </div>
+                    </div>
 
-                                    <td colspan="7" class="text-center text-muted py-4">
-                                        Nenhum lançamento encontrado neste período.
-                                    </td>
+                    <div class="form-row" id="group-temporarios" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ccc;">
+                        <div class="form-group">
+                            <label>Parcela Atual</label>
+                            <input type="number" name="parcela_atual" min="1" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Total de Parcelas</label>
+                            <input type="number" name="total_parcelas" min="1" value="1">
+                        </div>
+                    </div>
 
-                                </tr>
+                    <div style="margin-top: 15px;">
+                        <button type="submit">Salvar Transação</button>
+                    </div>
+                </form>
+            </div>
 
+            <!-- Tabela com Botão Editar e Status Pago -->
+            <h3>Lançamentos de {{ mes_atual }}</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Descrição</th>
+                        <th>Categoria</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in transacoes %}
+                    <tr>
+                        <td>{{ t.data_transacao }}</td>
+                        <td>
+                            <strong>{{ t.descricao }}</strong>
+                            {% if t.subtipo_despesa %}
+                                <br><small style="color: #666;">({{ t.subtipo_despesa.upper() }})</small>
                             {% endif %}
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            </div>
-
-        </main>
-
-    </div>
-
-</div>
-```
-
-</div>
-
-<!-- ==============================================
-     MODAL: NOVA TRANSAÇÃO
-================================================ -->
-
-<div class="modal fade" id="modalNovaTransacao" tabindex="-1">
-
-```
-<div class="modal-dialog modal-dialog-centered modal-lg">
-
-    <div class="modal-content">
-
-        <div class="modal-header">
-
-            <h5 class="modal-title fw-bold">
-                Nova Transação
-            </h5>
-
-            <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal">
-            </button>
-
+                        </td>
+                        <td>{{ t.categoria or 'Sem categoria' }}</td>
+                        <td style="color: {% if t.tipo == 'receita' %}green{% else %}red{% endif %}; font-weight: bold;">
+                            R$ {{ "%.2f"|format(t.valor) }}
+                        </td>
+                        <td>
+                            {% if t.pago %}
+                                <span class="status-pago">✔ Pago</span>
+                            {% else %}
+                                <span class="status-pendente">⏳ Pendente</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn-edit" onclick="abrirModalEdicao({{ t.id }}, '{{ t.descricao }}', {{ t.valor }}, '{{ t.tipo }}', '{{ t.data_transacao }}', {{ t.categoria_id or 0 }}, {{ 1 if t.pago else 0 }})">Editar</button>
+                            <a href="/excluir-transacao/{{ t.id }}?mes={{ mes_atual }}" class="btn-delete" onclick="return confirm('Excluir este lançamento?')">Excluir</a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center;">Nenhum lançamento neste mês.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-
-        <form action="{{ url_for('nova_transacao') }}" method="POST">
-
-            <div class="modal-body">
-
-                <div class="row g-3">
-
-                    <!-- DESCRIÇÃO -->
-                    <div class="col-md-6">
-
-                        <label class="form-label small fw-semibold">
-                            Descrição
-                        </label>
-
-                        <input
-                            type="text"
-                            name="descricao"
-                            class="form-control"
-                            placeholder="Ex: Mercado, Salário..."
-                            required>
-
-                    </div>
-
-                    <!-- VALOR -->
-                    <div class="col-md-3">
-
-                        <label class="form-label small fw-semibold">
-                            Valor (R$)
-                        </label>
-
-                        <input
-                            type="number"
-                            step="0.01"
-                            name="valor"
-                            class="form-control"
-                            placeholder="0.00"
-                            required>
-
-                    </div>
-
-                    <!-- TIPO -->
-                    <div class="col-md-3">
-
-                        <label class="form-label small fw-semibold">
-                            Tipo
-                        </label>
-
-                        <select
-                            name="tipo"
-                            id="novaTipo"
-                            class="form-select"
-                            onchange="alternarCamposNovaTransacao()">
-
-                            <option value="despesa">
-                                Despesa
-                            </option>
-
-                            <option value="receita">
-                                Receita
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                    <!-- CATEGORIA -->
-                    <div class="col-md-6">
-
-                        <label class="form-label small fw-semibold">
-                            Categoria
-                        </label>
-
-                        <select
-                            name="categoria_id"
-                            class="form-select">
-
-                            {% for cat in categorias %}
-
-                                <option value="{{ cat.id }}">
-                                    {{ cat.nome }}
-                                </option>
-
-                            {% endfor %}
-
-                        </select>
-
-                    </div>
-
-                    <!-- DATA -->
-                    <div class="col-md-6">
-
-                        <label class="form-label small fw-semibold">
-                            Data
-                        </label>
-
-                        <input
-                            type="date"
-                            name="data_transacao"
-                            class="form-control"
-                            value="{{ mes_atual }}-01"
-                            required>
-
-                    </div>
-
-                    <!-- CLASSIFICAÇÃO -->
-                    <div class="col-md-4" id="groupClassificacao">
-
-                        <label class="form-label small fw-semibold">
-                            Classificação
-                        </label>
-
-                        <select
-                            name="classificacao"
-                            id="novaClassificacao"
-                            class="form-select"
-                            onchange="alternarCamposNovaTransacao()">
-
-                            <option value="fixa">
-                                Fixa
-                            </option>
-
-                            <option value="variavel">
-                                Variável
-                            </option>
-
-                            <option value="temporaria">
-                                Temporária (Parcelada)
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                    <!-- PARCELA ATUAL -->
-                    <div class="col-md-4 d-none" id="groupParcelaAtual">
-
-                        <label class="form-label small fw-semibold">
-                            Parcela Atual
-                        </label>
-
-                        <input
-                            type="number"
-                            min="1"
-                            name="parcela_atual"
-                            class="form-control"
-                            value="1">
-
-                    </div>
-
-                    <!-- TOTAL PARCELAS -->
-                    <div class="col-md-4 d-none" id="groupTotalParcelas">
-
-                        <label class="form-label small fw-semibold">
-                            Total Parcelas
-                        </label>
-
-                        <input
-                            type="number"
-                            min="1"
-                            name="total_parcelas"
-                            class="form-control"
-                            value="1">
-
-                    </div>
-
-                    <!-- PAGO -->
-                    <div class="col-12 mt-3">
-
-                        <div class="form-check">
-
-                            <input
-                                class="form-check-input"
-                                type="checkbox"
-                                name="pago"
-                                value="1"
-                                id="pagoCheck">
-
-                            <label
-                                class="form-check-label text-dark small fw-semibold"
-                                for="pagoCheck">
-
-                                Pago / Recebido
-
-                            </label>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div class="modal-footer">
-
-                <button
-                    type="button"
-                    class="btn btn-light border"
-                    data-bs-dismiss="modal">
-
-                    Cancelar
-
-                </button>
-
-                <button
-                    type="submit"
-                    class="btn btn-primary">
-
-                    Salvar Transação
-
-                </button>
-
-            </div>
-
-        </form>
-
     </div>
 
-</div>
-```
-
-</div>
-
-<!-- ==============================================
-     MODAL: EDITAR TRANSAÇÃO
-================================================ -->
-
-<div class="modal fade" id="modalEditarTransacao" tabindex="-1">
-
-```
-<div class="modal-dialog modal-dialog-centered modal-lg">
-
-    <div class="modal-content">
-
-        <div class="modal-header">
-
-            <h5 class="modal-title fw-bold">
-                Editar Transação
-            </h5>
-
-            <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal">
-            </button>
-
+    <!-- Modal de Edição -->
+    <div id="modalEdicao" class="modal">
+        <div class="modal-content">
+            <h3>Editar Transação</h3>
+            <form id="formEdicao" method="POST">
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label>Descrição</label>
+                    <input type="text" id="edit-descricao" name="descricao" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label>Valor (R$)</label>
+                    <input type="number" step="0.01" id="edit-valor" name="valor" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label>Tipo</label>
+                    <select id="edit-tipo" name="tipo" required>
+                        <option value="despesa">Despesa</option>
+                        <option value="receita">Receita</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label>Categoria</label>
+                    <select id="edit-categoria" name="categoria_id">
+                        {% for cat in categorias %}
+                            <option value="{{ cat.id }}">{{ cat.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label>Data</label>
+                    <input type="date" id="edit-data" name="data_transacao" required>
+                </div>
+                <div class="form-group" style="flex-direction: row; gap: 10px; margin-bottom: 15px;">
+                    <input type="checkbox" id="edit-pago" name="pago" value="1">
+                    <label for="edit-pago">Pago</label>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" onclick="fecharModal()" style="background: #6c757d;">Cancelar</button>
+                    <button type="submit">Salvar Alterações</button>
+                </div>
+            </form>
         </div>
-
-        <form
-            id="formEditarTransacao"
-            method="POST"
-            action="">
-
-            <div class="modal-body">
-
-                <div class="row g-3">
-
-                    <!-- DESCRIÇÃO -->
-                    <div class="col-md-6">
-
-                        <label class="form-label small fw-semibold">
-                            Descrição
-                        </label>
-
-                        <input
-                            type="text"
-                            id="edit_descricao"
-                            name="descricao"
-                            class="form-control"
-                            required>
-
-                    </div>
-
-                    <!-- VALOR -->
-                    <div class="col-md-3">
-
-                        <label class="form-label small fw-semibold">
-                            Valor (R$)
-                        </label>
-
-                        <input
-                            type="number"
-                            step="0.01"
-                            id="edit_valor"
-                            name="valor"
-                            class="form-control"
-                            required>
-
-                    </div>
-
-                    <!-- TIPO -->
-                    <div class="col-md-3">
-
-                        <label class="form-label small fw-semibold">
-                            Tipo
-                        </label>
-
-                        <select
-                            id="edit_tipo"
-                            name="tipo"
-                            class="form-select">
-
-                            <option value="despesa">
-                                Despesa
-                            </option>
-
-                            <option value="receita">
-                                Receita
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                    <!-- CATEGORIA -->
-                    <div class="col-md-6">
-
-                        <label class="form-label small fw-semibold">
-                            Categoria
-                        </label>
-
-                        <select
-                            id="edit_categoria_id"
-                            name="categoria_id"
-                            class="form-select">
-
-                            <option value="">
-                                Sem Categoria
-                            </option>
-
-                            {% for cat in categorias %}
-
-                                <option value="{{ cat.id }}">
-                                    {{ cat.nome }}
-                                </option>
-
-                            {% endfor %}
-
-                        </select>
-
-                    </div>
-
-                    <!-- DATA -->
-                    <div class="col-md-6">
-
-                        <label class="form-label small fw-semibold">
-                            Data
-                        </label>
-
-                        <input
-                            type="date"
-                            id="edit_data_transacao"
-                            name="data_transacao"
-                            class="form-control"
-                            required>
-
-                    </div>
-
-                    <!-- PAGO -->
-                    <div class="col-12 mt-3">
-
-                        <div class="form-check">
-
-                            <input
-                                class="form-check-input"
-                                type="checkbox"
-                                name="pago"
-                                value="1"
-                                id="edit_pago">
-
-                            <label
-                                class="form-check-label text-dark small fw-semibold"
-                                for="edit_pago">
-
-                                Pago / Recebido
-
-                            </label>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div class="modal-footer">
-
-                <button
-                    type="button"
-                    class="btn btn-light border"
-                    data-bs-dismiss="modal">
-
-                    Cancelar
-
-                </button>
-
-                <button
-                    type="submit"
-                    class="btn btn-warning text-dark fw-bold">
-
-                    Salvar Alterações
-
-                </button>
-
-            </div>
-
-        </form>
-
     </div>
 
-</div>
-```
-
-</div>
-
-<!-- ==============================================
-     SCRIPTS
-================================================ -->
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-<script>
-
-    /* ==========================================
-       MOSTRAR/ESCONDER CAMPOS DE PARCELAMENTO
-    ========================================== */
-
-    function alternarCamposNovaTransacao() {
-
-        const tipo =
-            document.getElementById('novaTipo').value;
-
-        const classificacao =
-            document.getElementById('novaClassificacao').value;
-
-        const groupClassificacao =
-            document.getElementById('groupClassificacao');
-
-        const groupParcelaAtual =
-            document.getElementById('groupParcelaAtual');
-
-        const groupTotalParcelas =
-            document.getElementById('groupTotalParcelas');
-
-
-        if (tipo === 'receita') {
-
-            groupClassificacao.classList.add('d-none');
-            groupParcelaAtual.classList.add('d-none');
-            groupTotalParcelas.classList.add('d-none');
-
-        } else {
-
-            groupClassificacao.classList.remove('d-none');
-
-            if (classificacao === 'temporaria') {
-
-                groupParcelaAtual.classList.remove('d-none');
-                groupTotalParcelas.classList.remove('d-none');
-
+    <script>
+        function toggleCamposDespesa() {
+            const tipo = document.getElementById('tipo').value;
+            const groupSubtipo = document.getElementById('group-subtipo');
+            const groupTemporarios = document.getElementById('group-temporarios');
+            if (tipo === 'receita') {
+                groupSubtipo.style.display = 'none';
+                groupTemporarios.style.display = 'none';
             } else {
-
-                groupParcelaAtual.classList.add('d-none');
-                groupTotalParcelas.classList.add('d-none');
-
+                groupSubtipo.style.display = 'flex';
+                toggleCamposTemporarios();
             }
-
         }
 
-    }
-
-
-    /* ==========================================
-       ABRIR MODAL DE EDIÇÃO
-    ========================================== */
-
-    function abrirModalEdicao(
-        id,
-        descricao,
-        valor,
-        tipo,
-        categoriaId,
-        dataTransacao,
-        pago
-    ) {
-
-        document.getElementById(
-            'formEditarTransacao'
-        ).action = '/transacao/editar/' + id;
-
-
-        document.getElementById(
-            'edit_descricao'
-        ).value = descricao;
-
-
-        document.getElementById(
-            'edit_valor'
-        ).value = valor;
-
-
-        document.getElementById(
-            'edit_tipo'
-        ).value = tipo;
-
-
-        document.getElementById(
-            'edit_categoria_id'
-        ).value = categoriaId || '';
-
-
-        document.getElementById(
-            'edit_data_transacao'
-        ).value = dataTransacao;
-
-
-        document.getElementById(
-            'edit_pago'
-        ).checked =
-            (
-                pago === '1' ||
-                pago === 'True' ||
-                pago === true
-            );
-
-
-        const modalEditar =
-            new bootstrap.Modal(
-                document.getElementById(
-                    'modalEditarTransacao'
-                )
-            );
-
-
-        modalEditar.show();
-
-    }
-
-
-    /* ==========================================
-       GRÁFICO DE DESPESAS
-    ========================================== */
-
-    document.addEventListener(
-        'DOMContentLoaded',
-        function () {
-
-            const colors = [
-                '#2563eb',
-                '#f59e0b',
-                '#10b981',
-                '#ef4444',
-                '#8b5cf6',
-                '#ec4899',
-                '#64748b'
-            ];
-
-
-            const containerMes =
-                document.getElementById(
-                    'dataContainerMes'
-                );
-
-
-            if (!containerMes) {
-                return;
-            }
-
-
-            const labelsMes =
-                JSON.parse(
-                    containerMes.getAttribute(
-                        'data-labels'
-                    ) || '[]'
-                );
-
-
-            const valuesMes =
-                JSON.parse(
-                    containerMes.getAttribute(
-                        'data-values'
-                    ) || '[]'
-                );
-
-
-            const canvasMes =
-                document.getElementById(
-                    'chartDespesasMes'
-                );
-
-
-            if (!canvasMes) {
-                return;
-            }
-
-
-            const ctxMes =
-                canvasMes.getContext('2d');
-
-
-            new Chart(ctxMes, {
-
-                type: 'doughnut',
-
-                data: {
-
-                    labels: labelsMes,
-
-                    datasets: [{
-
-                        data: valuesMes,
-
-                        backgroundColor: colors,
-
-                        borderWidth: 0
-
-                    }]
-
-                },
-
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false,
-
-                    plugins: {
-
-                        legend: {
-
-                            position: 'right',
-
-                            labels: {
-
-                                color: '#0f172a'
-
-                            }
-
-                        }
-
-                    }
-
-                }
-
-            });
-
+        function toggleCamposTemporarios() {
+            const subtipo = document.getElementById('subtipo_despesa').value;
+            const groupTemporarios = document.getElementById('group-temporarios');
+            groupTemporarios.style.display = (subtipo === 'temporaria') ? 'flex' : 'none';
         }
-    );
 
-</script>
+        function abrirModalEdicao(id, descricao, valor, tipo, data, categoriaId, pago) {
+            document.getElementById('formEdicao').action = '/editar-transacao/' + id;
+            document.getElementById('edit-descricao').value = descricao;
+            document.getElementById('edit-valor').value = valor;
+            document.getElementById('edit-tipo').value = tipo;
+            document.getElementById('edit-data').value = data;
+            document.getElementById('edit-categoria').value = categoriaId;
+            document.getElementById('edit-pago').checked = (pago === 1);
+            document.getElementById('modalEdicao').style.display = 'flex';
+        }
 
+        function fecharModal() {
+            document.getElementById('modalEdicao').style.display = 'none';
+        }
+    </script>
 </body>
 </html>
-
-
-
