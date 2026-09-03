@@ -15,12 +15,12 @@ app.config['SESSION_COOKIE_SECURE'] = True
 
 def conectar_banco():
     # Se estiver no Render/TiDB lê as variáveis de ambiente ativas
-    # Se estiver rodando localmente no Docker assume os valores padrão
+    # Caso contrário, utiliza as credenciais padrão do TiDB Cloud
     return mysql.connector.connect(
-        host=os.getenv('DB_HOST', 'localhost'),
-        port=int(os.getenv('DB_PORT', 3306)),
-        user=os.getenv('DB_USER', 'financetech'),
-        password=os.getenv('DB_PASSWORD', 'financetech123'),
+        host=os.getenv('DB_HOST', 'gateway01.sa-east-1.prod.aws.tidbcloud.com'),
+        port=int(os.getenv('DB_PORT', 4000)),
+        user=os.getenv('DB_USER', '38XfxrATWP8ovgf.root'),
+        password=os.getenv('DB_PASSWORD', '9kV8yc6zXguyIUeb'),
         database=os.getenv('DB_NAME', 'financetech')
     )
 
