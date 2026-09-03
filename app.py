@@ -14,8 +14,6 @@ app.config['SESSION_COOKIE_SECURE'] = True
 
 
 def conectar_banco():
-    # Se estiver no Render/TiDB lê as variáveis de ambiente ativas
-    # Caso contrário, utiliza as credenciais padrão do TiDB Cloud
     return mysql.connector.connect(
         host=os.getenv('DB_HOST', 'gateway01.sa-east-1.prod.aws.tidbcloud.com'),
         port=int(os.getenv('DB_PORT', 4000)),
@@ -177,28 +175,35 @@ def dashboard():
     despesas_categoria_mes = {}
 
     for t in transacoes:
-        valor = float(t['valor'])
-        if t['tipo'] == 'receita':
+        valor = float(t['valor']) if t.get('valor') is not None else 0.0
+        tipo = t.get('tipo', '')
+        subtipo = t.get('subtipo_despesa') or ''
+
+        if tipo == 'receita':
             total_receitas += valor
-        elif t['tipo'] == 'despesa':
+        elif tipo == 'despesa':
             total_despesas += valor
-            nome_cat = t['categoria'] or 'Outros'
+            nome_cat = t.get('categoria') or 'Outros'
             despesas_categoria_mes[nome_cat] = despesas_categoria_mes.get(nome_cat, 0.0) + valor
 
-        if isinstance(t['data_transacao'], (datetime, date)):
-            data_original = t['data_transacao']
+        dt_raw = t.get('data_transacao')
+        if isinstance(dt_raw, (datetime, date)):
+            data_original = dt_raw
             t['data_transacao'] = data_original.strftime('%Y-%m-%d')
+        elif dt_raw:
+            data_original = datetime.strptime(str(dt_raw)[:10], '%Y-%m-%d').date()
+            t['data_transacao'] = str(data_original)
         else:
-            data_original = datetime.strptime(str(t['data_transacao'])[:10], '%Y-%m-%d').date()
+            data_original = date.today()
             t['data_transacao'] = str(data_original)
 
         if t.get('categoria_id') is None:
             t['categoria_id'] = ""
 
-        t['classificacao'] = t.get('subtipo_despesa') or ''
+        t['classificacao'] = subtipo
 
-        if t['tipo'] == 'despesa' and t['subtipo_despesa'] == 'temporaria' and t['total_parcelas']:
-            parcela_inicial = t['parcela_atual'] or 1
+        if tipo == 'despesa' and subtipo == 'temporaria' and t.get('total_parcelas'):
+            parcela_inicial = t.get('parcela_atual') or 1
             total_parcelas = int(t['total_parcelas'])
 
             diferenca_meses = (ano - data_original.year) * 12 + (mes - data_original.month)
@@ -229,15 +234,16 @@ def dashboard():
 
     despesas_categoria_ano = {}
     for d in despesas_ano_raw:
-        cat_nome = d['categoria'] or 'Outros'
-        despesas_categoria_ano[cat_nome] = despesas_categoria_ano.get(cat_nome, 0.0) + float(d['valor'])
+        cat_nome = d.get('categoria') or 'Outros'
+        val_d = float(d['valor']) if d.get('valor') is not None else 0.0
+        despesas_categoria_ano[cat_nome] = despesas_categoria_ano.get(cat_nome, 0.0) + val_d
 
     cursor.close()
     conexao.close()
 
     return render_template(
         'dashboard.html',
-        usuario=session['usuario_nome'],
+        usuario=session.get('usuario_nome', 'Usuário'),
         transacoes=transacoes,
         categorias=categorias,
         meses=obter_meses(),
@@ -390,7 +396,6 @@ def metas():
     conexao = conectar_banco()
     cursor = conexao.cursor(dictionary=True)
 
-    # Processa a criação de uma nova meta (via Formulário/Modal)
     if request.method == 'POST':
         titulo = request.form.get('titulo', '').strip()
         valor_alvo = float(request.form.get('valor_alvo', 0))
@@ -409,11 +414,9 @@ def metas():
         conexao.close()
         return redirect(url_for('metas'))
 
-    # Busca categorias do usuário para alimentar o filtro no Modal
     cursor.execute("SELECT * FROM categorias WHERE usuario_id = %s ORDER BY nome", (usuario_id,))
     categorias = cursor.fetchall()
 
-    # Busca todas as metas do usuário com o nome da categoria vinculada
     sql_metas = """
         SELECT m.*, c.nome AS categoria_nome 
         FROM metas m 
@@ -424,10 +427,9 @@ def metas():
     cursor.execute(sql_metas, (usuario_id,))
     lista_metas = cursor.fetchall()
 
-    # Calcula e formata os dados das metas
     for meta in lista_metas:
-        valor_alvo = float(meta['valor_alvo'])
-        valor_atual = float(meta['valor_atual'])
+        valor_alvo = float(meta['valor_alvo']) if meta.get('valor_alvo') else 0.0
+        valor_atual = float(meta['valor_atual']) if meta.get('valor_atual') else 0.0
         porcentagem = (valor_atual / valor_alvo * 100) if valor_alvo > 0 else 0
         meta['porcentagem'] = min(round(porcentagem, 1), 100)
 
@@ -439,7 +441,7 @@ def metas():
 
     return render_template(
         'metas.html',
-        usuario=session['usuario_nome'],
+        usuario=session.get('usuario_nome', 'Usuário'),
         metas=lista_metas,
         categorias=categorias
     )
@@ -484,4 +486,4 @@ def deletar_meta(id):
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=True)
