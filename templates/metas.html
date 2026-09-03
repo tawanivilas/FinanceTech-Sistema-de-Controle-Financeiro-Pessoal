@@ -246,8 +246,8 @@
                             <div class="meta-card d-flex flex-column justify-content-between">
                                 <div>
                                     <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <h5 class="meta-title text-truncate">{{ meta.titulo }}</h5>
-                                        <a href="{{ url_for('deletar_meta', id=meta.id) }}" class="trash-btn ms-2" onclick="return confirm('Deseja excluir esta meta?');">
+                                        <h5 class="meta-title text-truncate">{{ meta.nome }}</h5>
+                                        <a href="{{ url_for('excluir_meta', id=meta.id) }}" class="trash-btn ms-2" onclick="return confirm('Deseja excluir esta meta?');">
                                             <i class="fa-regular fa-trash-can"></i>
                                         </a>
                                     </div>
@@ -261,21 +261,22 @@
                                     </div>
 
                                     <div class="text-secondary small mb-2" style="font-size: 13px;">
-                                        {{ meta.categoria_nome or 'Sem categoria' }} — até {{ meta.data_limite_fmt }}
+                                        {% if meta.prazo %}
+                                            Até {{ meta.prazo }}
+                                        {% else %}
+                                            Sem prazo definido
+                                        {% endif %}
                                     </div>
 
                                     <div class="fs-5 fw-bold text-white mb-1">
-                                        R$ {{ "%.2f"|format(meta.valor_atual) }} <span class="text-secondary fw-normal fs-6">de R$ {{ "%.2f"|format(meta.valor_alvo) }}</span>
+                                        R$ {{ "%.2f"|format(meta.valor_atual) }} <span class="text-secondary fw-normal fs-6">de R$ {{ "%.2f"|format(meta.valor_meta) }}</span>
                                     </div>
 
-                                    
-                                   
-<div class="progress-bar-custom">
-    {% set pct = 100 if meta.porcentagem >= 100 else meta.porcentagem %}
-    {% set estilo_largura = "width: " ~ pct ~ "%;" %}
-    <div class="{% if meta.porcentagem >= 100 %}progress-fill-green{% else %}progress-fill-blue{% endif %}" 
-         style="{{ estilo_largura }}"></div>
-</div>
+                                    <div class="progress-bar-custom">
+                                        {% set pct = 100 if meta.porcentagem >= 100 else meta.porcentagem %}
+                                        <div class="{% if meta.porcentagem >= 100 %}progress-fill-green{% else %}progress-fill-blue{% endif %}" 
+                                             style="width: {{ pct }}%;"></div>
+                                    </div>
 
                                     <div class="small text-secondary" style="font-size: 12px;">
                                         {{ meta.porcentagem }}% concluído
@@ -298,14 +299,14 @@
                             <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
                                 <div class="modal-content modal-content-custom p-2">
                                     <div class="modal-header border-0 pb-1">
-                                        <h5 class="modal-title fw-bold fs-6">Aportar em: {{ meta.titulo }}</h5>
+                                        <h5 class="modal-title fw-bold fs-6">Aportar em: {{ meta.nome }}</h5>
                                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                     </div>
                                     <form action="{{ url_for('depositar_meta', id=meta.id) }}" method="POST">
                                         <div class="modal-body py-2">
                                             <div class="mb-2">
                                                 <label class="form-label small text-secondary">Valor do Aporte (R$)</label>
-                                                <input type="number" step="0.01" name="valor_adicional" class="form-control" placeholder="0,00" required>
+                                                <input type="number" step="0.01" name="valor" class="form-control" placeholder="0,00" required>
                                             </div>
                                         </div>
                                         <div class="modal-footer border-0 pt-0 d-flex justify-content-end gap-2">
@@ -340,38 +341,22 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="font-size: 11px; opacity: 0.7;"></button>
             </div>
 
-            <form action="{{ url_for('metas') }}" method="POST">
+            <form action="{{ url_for('nova_meta') }}" method="POST">
                 <div class="modal-body px-3 py-3">
                     
                     <div class="mb-3">
                         <label class="form-label fw-semibold text-white mb-2" style="font-size: 14px;">Título</label>
-                        <input type="text" name="titulo" class="form-control" placeholder="Ex: Reserva de emergência" required>
+                        <input type="text" name="nome" class="form-control" placeholder="Ex: Reserva de emergência" required>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold text-white mb-2" style="font-size: 14px;">Valor alvo (R$)</label>
-                        <input type="text" name="valor_alvo" class="form-control" placeholder="0,00" required>
+                        <input type="number" step="0.01" name="valor_meta" class="form-control" placeholder="0,00" required>
                     </div>
 
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <label class="form-label fw-semibold text-white mb-2" style="font-size: 14px;">Data início</label>
-                            <input type="date" name="data_inicio" class="form-control" style="color-scheme: dark;">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label fw-semibold text-white mb-2" style="font-size: 14px;">Data limite</label>
-                            <input type="date" name="data_limite" class="form-control" style="color-scheme: dark;">
-                        </div>
-                    </div>
-
-                    <div class="mb-2">
-                        <label class="form-label fw-semibold text-white mb-2" style="font-size: 14px;">Categoria (opcional)</label>
-                        <select name="categoria_id" class="form-select">
-                            <option value="" selected>Nenhuma</option>
-                            {% for cat in categorias %}
-                                <option value="{{ cat.id }}">{{ cat.nome }}</option>
-                            {% endfor %}
-                        </select>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-white mb-2" style="font-size: 14px;">Data limite</label>
+                        <input type="date" name="prazo" class="form-control" style="color-scheme: dark;">
                     </div>
 
                 </div>
