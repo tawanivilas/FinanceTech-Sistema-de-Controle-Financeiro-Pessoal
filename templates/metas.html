@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanceTech - Metas</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background-color: #121214;
+            color: #f4f4f5;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Clara */
+        .sidebar {
+            background-color: #fefce8;
+            min-height: 100vh;
+            border-right: 1px solid #fef08a;
+            color: #1c1917;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .brand-logo {
+            color: #1c1917;
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #fef08a;
+        }
+
+        .nav-link-custom {
+            color: #57534e;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 10px 16px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            margin-bottom: 6px;
+        }
+
+        .nav-link-custom:hover {
+            color: #1c1917;
+            background-color: rgba(254, 240, 138, 0.5);
+        }
+
+        .nav-link-custom.active {
+            background-color: #fde047;
+            color: #854d0e;
+            font-weight: 700;
+        }
+
+        .btn-logout {
+            color: #dc2626;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            padding: 12px 16px;
+            border-top: 1px solid #fef08a;
+            margin-top: auto;
+        }
+
+        .btn-logout:hover {
+            color: #991b1b;
+        }
+
+        /* Área Principal */
+        .main-content {
+            background-color: #121214;
+            min-height: 100vh;
+        }
+
+        /* Cards */
+        .meta-card {
+            background-color: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 16px;
+            padding: 20px;
+            height: 100%;
+            transition: border-color 0.2s;
+        }
+
+        .meta-card:hover {
+            border-color: #3f3f46;
+        }
+
+        .meta-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .badge-status-andamento {
+            background-color: #1e293b;
+            color: #38bdf8;
+            border: 1px solid #0369a1;
+            font-weight: 600;
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .badge-status-concluida {
+            background-color: #14532d;
+            color: #86efac;
+            border: 1px solid #15803d;
+            font-weight: 600;
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .trash-btn {
+            color: #71717a;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .trash-btn:hover {
+            color: #ef4444;
+        }
+
+        .progress-bar-custom {
+            height: 8px;
+            background-color: #27272a;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 12px;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill-blue {
+            background-color: #2563eb;
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        .progress-fill-green {
+            background-color: #22c55e;
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        /* Modais */
+        .modal-content-custom {
+            background-color: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 16px;
+            color: #f4f4f5;
+        }
+
+        .modal-content-custom .form-control,
+        .modal-content-custom .form-select {
+            background-color: #121214;
+            border: 1px solid #27272a;
+            color: #f4f4f5;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 14px;
+        }
+
+        .modal-content-custom .form-control:focus,
+        .modal-content-custom .form-select:focus {
+            border-color: #3f3f46;
+            box-shadow: none;
+            background-color: #121214;
+            color: #fff;
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        
+        <!-- SIDEBAR LATERAL CLARA -->
+        <aside class="col-md-3 col-lg-2 sidebar p-3">
+            <div>
+                <div class="brand-logo mb-4">
+                    <i class="fa-solid fa-wallet fs-5"></i>
+                    <span>FinanceTech</span>
+                </div>
+
+                <nav class="nav flex-column">
+                    <a href="{{ url_for('dashboard') }}" class="nav-link-custom">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span>Visão geral</span>
+                    </a>
+                    <a href="{{ url_for('metas') }}" class="nav-link-custom active">
+                        <i class="fa-solid fa-bullseye"></i>
+                        <span>Metas</span>
+                    </a>
+                </nav>
+            </div>
+
+            <a href="{{ url_for('logout') }}" class="btn-logout">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Sair</span>
+            </a>
+        </aside>
+
+        <!-- ÁREA PRINCIPAL -->
+        <main class="col-md-9 col-lg-10 main-content p-4 p-md-5">
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold m-0 text-white fs-4">Metas financeiras</h3>
+                
+                <button type="button" class="btn btn-light fw-bold px-3 py-2" data-bs-toggle="modal" data-bs-target="#modalNovaMeta" style="border-radius: 8px; font-size: 14px;">
+                    + Nova meta
+                </button>
+            </div>
+
+            <div class="row g-3">
+                {% if metas %}
+                    {% for meta in metas %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="meta-card d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="meta-title text-truncate">{{ meta.titulo }}</h5>
+                                        <a href="{{ url_for('deletar_meta', id=meta.id) }}" class="trash-btn ms-2" onclick="return confirm('Deseja excluir esta meta?');">
+                                            <i class="fa-regular fa-trash-can"></i>
+                                        </a>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        {% if meta.porcentagem >= 100 %}
+                                            <span class="badge-status-concluida">Concluída</span>
+                                        {% else %}
+                                            <span class="badge-status-andamento">Em andamento</span>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="text-secondary small mb-2" style="font-size: 13px;">
+                                        {{ meta.categoria_nome or 'Sem categoria' }} — até {{ meta.data_limite_fmt }}
+                                    </div>
+
+                                    <div class="fs-5 fw-bold text-white mb-1">
+                                        R$ {{ "%.2f"|format(meta.valor_atual) }} <span class="text-secondary fw-normal fs-6">de R$ {{ "%.2f"|format(meta.valor_alvo) }}</span>
+                                    </div>
+
+                                    
+                                   
+<div class="progress-bar-custom">
+    {% set pct = 100 if meta.porcentagem >= 100 else meta.porcentagem %}
+    {% set estilo_largura = "width: " ~ pct ~ "%;" %}
+    <div class="{% if meta.porcentagem >= 100 %}progress-fill-green{% else %}progress-fill-blue{% endif %}" 
+         style="{{ estilo_largura }}"></div>
+</div>
+
+                                    <div class="small text-secondary" style="font-size: 12px;">
+                                        {{ meta.porcentagem }}% concluído
+                                    </div>
+                                </div>
+
+                                <div class="pt-3 mt-3 border-top border-secondary border-opacity-25 d-flex justify-content-end">
+                                    <button class="btn btn-sm btn-outline-light text-secondary border-secondary px-3" 
+                                            style="border-radius: 6px; font-size: 12px;" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#modalAporte{{ meta.id }}">
+                                        + Aportar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modal Aporte -->
+                        <div class="modal fade" id="modalAporte{{ meta.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+                                <div class="modal-content modal-content-custom p-2">
+                                    <div class="modal-header border-0 pb-1">
+                                        <h5 class="modal-title fw-bold fs-6">Aportar em: {{ meta.titulo }}</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form action="{{ url_for('depositar_meta', id=meta.id) }}" method="POST">
+                                        <div class="modal-body py-2">
+                                            <div class="mb-2">
+                                                <label class="form-label small text-secondary">Valor do Aporte (R$)</label>
+                                                <input type="number" step="0.01" name="valor_adicional" class="form-control" placeholder="0,00" required>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer border-0 pt-0 d-flex justify-content-end gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary text-white" data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="submit" class="btn btn-sm btn-primary">Confirmar</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12 py-5 text-center text-secondary">
+                        <i class="fa-solid fa-bullseye fa-3x mb-3 opacity-50"></i>
+                        <h5 class="text-white">Nenhuma meta encontrada</h5>
+                        <p class="small">Clique no botão "+ Nova meta" no topo direito para criar a primeira.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<!-- MODAL: NOVA META -->
+<div class="modal fade" id="modalNovaMeta" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+        <div class="modal-content modal-content-custom p-2">
+            
+            <div class="modal-header border-0 pb-1 pt-2 px-3 align-items-center">
+                <h5 class="modal-title fw-bold fs-5 text-white m-0">Nova meta</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="font-size: 11px; opacity: 0.7;"></button>
+            </div>
+
+            <form action="{{ url_for('metas') }}" method="POST">
+                <div class="modal-body px-3 py-3">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-white mb-2" style="font-size: 14px;">Título</label>
+                        <input type="text" name="titulo" class="form-control" placeholder="Ex: Reserva de emergência" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-white mb-2" style="font-size: 14px;">Valor alvo (R$)</label>
+                        <input type="text" name="valor_alvo" class="form-control" placeholder="0,00" required>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold text-white mb-2" style="font-size: 14px;">Data início</label>
+                            <input type="date" name="data_inicio" class="form-control" style="color-scheme: dark;">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold text-white mb-2" style="font-size: 14px;">Data limite</label>
+                            <input type="date" name="data_limite" class="form-control" style="color-scheme: dark;">
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label fw-semibold text-white mb-2" style="font-size: 14px;">Categoria (opcional)</label>
+                        <select name="categoria_id" class="form-select">
+                            <option value="" selected>Nenhuma</option>
+                            {% for cat in categorias %}
+                                <option value="{{ cat.id }}">{{ cat.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer border-0 pt-2 px-3 pb-2 d-flex justify-content-end gap-2">
+                    <button type="button" class="btn fw-semibold" 
+                            style="background-color: #18181b; border: 1px solid #27272a; color: #f4f4f5; border-radius: 8px; padding: 8px 18px; font-size: 14px;" 
+                            data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn fw-semibold" 
+                            style="background-color: #2563eb; border: none; color: #ffffff; border-radius: 8px; padding: 8px 18px; font-size: 14px;">Criar meta</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

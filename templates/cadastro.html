@@ -1,68 +1,238 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro - FinanceTech</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>FinanceTech - Criar sua conta</title>
+    <!-- Font Awesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .card-register {
+            background-color: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
+            width: 100%;
+            max-width: 440px;
+            padding: 40px 32px;
+            text-align: center;
+        }
+
+        .brand-logo {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #1e1e1e;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .brand-logo span {
+            color: #ffb800;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e1e1e;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 28px;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #1e1e1e;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            color: #6c757d;
+            font-size: 1rem;
+            pointer-events: none;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            color: #6c757d;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .form-control {
+            width: 100%;
+            height: 48px;
+            padding: 0 42px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: #ffb800;
+            box-shadow: 0 0 0 3px rgba(255, 184, 0, 0.15);
+        }
+
+        .btn-yellow {
+            width: 100%;
+            height: 48px;
+            background-color: #ffb800;
+            color: #1e1e1e;
+            font-weight: 700;
+            border-radius: 8px;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-yellow:hover {
+            background-color: #e5a600;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.85rem;
+            margin: 24px 0;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .divider::before { margin-right: 12px; }
+        .divider::after { margin-left: 12px; }
+
+        .footer-text {
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+
+        .link-login {
+            color: #1e1e1e;
+            font-weight: 700;
+            text-decoration: underline;
+            text-decoration-color: #ffb800;
+            text-decoration-thickness: 3px;
+        }
+
+        .link-login:hover {
+            color: #e5a600;
+        }
+    </style>
 </head>
 <body>
 
-    <div class="cadastro-container">
-        <h1>FinanceTech</h1>
-        <h2>Criar sua conta</h2>
+<div class="card-register">
+    <div class="brand-logo">Finance<span>Tech</span></div>
+    <h2 class="title">Criar sua conta</h2>
+    <p class="subtitle">Preencha os dados abaixo para se cadastrar</p>
 
-        <!-- Formulário  para enviar os dados para a rota /cadastro -->
-        <form method="POST" action="/cadastro">
-            
-            <label for="nome">Nome</label>
-            <input
-                type="text"
-                id="nome"
-                name="nome"
-                placeholder="Digite seu nome"
-                required
-            >
+    <!-- Formulário do Flask integrado com endpoint 'cadastro' -->
+    <form action="{{ url_for('cadastro') }}" method="POST">
+        
+        <div class="form-group">
+            <label class="form-label" for="nome">Nome</label>
+            <div class="input-wrapper">
+                <i class="fa-regular fa-user input-icon"></i>
+                <input type="text" id="nome" name="nome" class="form-control" placeholder="Digite seu nome" required>
+            </div>
+        </div>
 
-            <label for="email">E-mail</label>
-            <input
-                type="email"
-                id="email"
-                name="email"
-                placeholder="Digite seu e-mail"
-                required
-            >
+        <div class="form-group">
+            <label class="form-label" for="email">E-mail</label>
+            <div class="input-wrapper">
+                <i class="fa-regular fa-envelope input-icon"></i>
+                <input type="email" id="email" name="email" class="form-control" placeholder="Digite seu e-mail" required>
+            </div>
+        </div>
 
-            <label for="senha">Senha</label>
-            <input
-                type="password"
-                id="senha"
-                name="senha"
-                placeholder="Digite sua senha"
-                required
-            >
+        <div class="form-group">
+            <label class="form-label" for="senha">Senha</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-lock input-icon"></i>
+                <input type="password" id="senha" name="senha" class="form-control" placeholder="Digite sua senha" required>
+                <i class="fa-regular fa-eye toggle-password" onclick="togglePasswordVisibility('senha', this)"></i>
+            </div>
+        </div>
 
-            <label for="confirmar_senha">Confirmar senha</label>
-            <input
-                type="password"
-                id="confirmar_senha"
-                name="confirmar_senha"
-                placeholder="Confirme sua senha"
-                required
-            >
+        <div class="form-group">
+            <label class="form-label" for="confirmar_senha">Confirmar senha</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-lock input-icon"></i>
+                <input type="password" id="confirmar_senha" name="confirmar_senha" class="form-control" placeholder="Confirme sua senha" required>
+                <i class="fa-regular fa-eye toggle-password" onclick="togglePasswordVisibility('confirmar_senha', this)"></i>
+            </div>
+        </div>
 
-            <button type="submit">
-                Cadastrar
-            </button>
+        <button type="submit" class="btn-yellow">Cadastrar</button>
+    </form>
 
-        </form>
+    <div class="divider">ou</div>
 
-        <p>
-            Já possui uma conta?
-            <!-- Link usando o url_for para redirecionar dinamicamente para a rota de login -->
-            <a href="{{ url_for('login') }}">Entrar</a>
-        </p>
-    </div>
+    <p class="footer-text">
+        Já possui uma conta? <a href="{{ url_for('login') }}" class="link-login">Entrar</a>
+    </p>
+</div>
+
+<script>
+    function togglePasswordVisibility(fieldId, icon) {
+        const passwordInput = document.getElementById(fieldId);
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+</script>
 
 </body>
 </html>
