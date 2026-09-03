@@ -1,25 +1,27 @@
+import os
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 import mysql.connector
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 
-# 1. A VARIÁVEL APP DEVE SER DEFINIDA AQUI NO INÍCIO:
 app = Flask(__name__)
 app.secret_key = 'sua_chave_secreta_aqui'
 
-# Configurações de Cookie para evitar Erro 401 no GitHub Codespaces
+# Configurações de Cookie para evitar Erro 401 no GitHub Codespaces / Nuvem
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_SECURE'] = True
 
 
 def conectar_banco():
+    # Se estiver no Render/TiDB lê as variáveis de ambiente ativas
+    # Se estiver rodando localmente no Docker assume os valores padrão
     return mysql.connector.connect(
-        host="localhost",
-        port=3306,
-        user="financetech",
-        password="financetech123",
-        database="financetech"
+        host=os.getenv('DB_HOST', 'localhost'),
+        port=int(os.getenv('DB_PORT', 3306)),
+        user=os.getenv('DB_USER', 'financetech'),
+        password=os.getenv('DB_PASSWORD', 'financetech123'),
+        database=os.getenv('DB_NAME', 'financetech')
     )
 
 def cadastrar_categorias_padrao(cursor, usuario_id):
@@ -318,6 +320,45 @@ def nova_transacao():
     except mysql.connector.Error as erro:
         return f"Erro ao salvar transação: {erro}"
 
+@app.route('/transacao/editar/<int:id>', methods=['POST'], strict_slashes=False)
+def editar_transacao(id):
+    if 'usuario_id' not in session:
+        return redirect(url_for('login'))
+
+    descricao = request.form.get('descricao', '').strip()
+    valor = float(request.form.get('valor', 0))
+    tipo = request.form.get('tipo', 'despesa')
+    categoria_id = request.form.get('categoria_id')
+    data_transacao_str = request.form.get('data_transacao')
+    pago = 1 if 'pago' in request.form else 0
+
+    if not data_transacao_str:
+        return "Data da transação é obrigatória."
+
+    try:
+        data_transacao = datetime.strptime(data_transacao_str, '%Y-%m-%d').date()
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        
+        sql = """
+            UPDATE transacoes 
+            SET descricao = %s, valor = %s, tipo = %s, categoria_id = %s, data_transacao = %s, pago = %s
+            WHERE id = %s AND usuario_id = %s
+        """
+        cursor.execute(sql, (
+            descricao, valor, tipo, 
+            categoria_id if categoria_id else None, 
+            data_transacao, pago, id, session['usuario_id']
+        ))
+        
+        conexao.commit()
+        cursor.close()
+        conexao.close()
+        
+        return redirect(url_for('dashboard', mes=data_transacao.strftime('%Y-%m')))
+    except mysql.connector.Error as erro:
+        return f"Erro ao atualizar transação: {erro}"
+
 @app.route('/transacao/deletar/<int:id>', strict_slashes=False)
 def deletar_transacao(id):
     if 'usuario_id' not in session:
@@ -335,5 +376,112 @@ def deletar_transacao(id):
     except mysql.connector.Error as erro:
         return f"Erro ao excluir transação: {erro}"
 
+
+# ==========================================
+# ROTAS DO MÓDULO DE METAS FINANCEIRAS
+# ==========================================
+
+@app.route('/metas', methods=['GET', 'POST'], strict_slashes=False)
+def metas():
+    if 'usuario_id' not in session:
+        return redirect(url_for('login'))
+
+    usuario_id = session['usuario_id']
+    conexao = conectar_banco()
+    cursor = conexao.cursor(dictionary=True)
+
+    # Processa a criação de uma nova meta (via Formulário/Modal)
+    if request.method == 'POST':
+        titulo = request.form.get('titulo', '').strip()
+        valor_alvo = float(request.form.get('valor_alvo', 0))
+        valor_atual = float(request.form.get('valor_atual', 0))
+        data_inicio = request.form.get('data_inicio') or None
+        data_limite = request.form.get('data_limite') or None
+        categoria_id = request.form.get('categoria_id') or None
+
+        sql = """
+            INSERT INTO metas (titulo, valor_alvo, valor_atual, data_inicio, data_limite, categoria_id, usuario_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """
+        cursor.execute(sql, (titulo, valor_alvo, valor_atual, data_inicio, data_limite, categoria_id, usuario_id))
+        conexao.commit()
+        cursor.close()
+        conexao.close()
+        return redirect(url_for('metas'))
+
+    # Busca categorias do usuário para alimentar o filtro no Modal
+    cursor.execute("SELECT * FROM categorias WHERE usuario_id = %s ORDER BY nome", (usuario_id,))
+    categorias = cursor.fetchall()
+
+    # Busca todas as metas do usuário com o nome da categoria vinculada
+    sql_metas = """
+        SELECT m.*, c.nome AS categoria_nome 
+        FROM metas m 
+        LEFT JOIN categorias c ON m.categoria_id = c.id 
+        WHERE m.usuario_id = %s 
+        ORDER BY m.id DESC
+    """
+    cursor.execute(sql_metas, (usuario_id,))
+    lista_metas = cursor.fetchall()
+
+    # Calcula e formata os dados das metas
+    for meta in lista_metas:
+        valor_alvo = float(meta['valor_alvo'])
+        valor_atual = float(meta['valor_atual'])
+        porcentagem = (valor_atual / valor_alvo * 100) if valor_alvo > 0 else 0
+        meta['porcentagem'] = min(round(porcentagem, 1), 100)
+
+        meta['data_inicio_fmt'] = meta['data_inicio'].strftime('%d/%m/%Y') if meta.get('data_inicio') else None
+        meta['data_limite_fmt'] = meta['data_limite'].strftime('%d/%m/%Y') if meta.get('data_limite') else 'Sem data'
+
+    cursor.close()
+    conexao.close()
+
+    return render_template(
+        'metas.html',
+        usuario=session['usuario_nome'],
+        metas=lista_metas,
+        categorias=categorias
+    )
+
+@app.route('/metas/depositar/<int:id>', methods=['POST'], strict_slashes=False)
+def depositar_meta(id):
+    if 'usuario_id' not in session:
+        return redirect(url_for('login'))
+
+    valor_adicional = float(request.form.get('valor_adicional', 0))
+
+    try:
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        sql = "UPDATE metas SET valor_atual = valor_atual + %s WHERE id = %s AND usuario_id = %s"
+        cursor.execute(sql, (valor_adicional, id, session['usuario_id']))
+        conexao.commit()
+        cursor.close()
+        conexao.close()
+    except mysql.connector.Error as erro:
+        return f"Erro ao atualizar o saldo da meta: {erro}"
+
+    return redirect(url_for('metas'))
+
+@app.route('/metas/deletar/<int:id>', strict_slashes=False)
+def deletar_meta(id):
+    if 'usuario_id' not in session:
+        return redirect(url_for('login'))
+
+    try:
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        cursor.execute("DELETE FROM metas WHERE id = %s AND usuario_id = %s", (id, session['usuario_id']))
+        conexao.commit()
+        cursor.close()
+        conexao.close()
+    except mysql.connector.Error as erro:
+        return f"Erro ao excluir meta: {erro}"
+
+    return redirect(url_for('metas'))
+
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port)
