@@ -238,6 +238,7 @@ def dashboard():
         return redirect(url_for("login"))
 
     usuario_id = session["usuario_id"]
+    usuario_nome = session.get("usuario_nome", "")
     conexao = None
     cursor = None
 
@@ -246,7 +247,16 @@ def dashboard():
         cursor = conexao.cursor(dictionary=True)
 
         hoje = date.today()
-        mes_atual = hoje.strftime("%Y-%m")
+        mes_atual = request.args.get("mes", hoje.strftime("%Y-%m"))
+
+        nomes_meses = [
+            "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+        ]
+        meses = [
+            {"codigo": f"{hoje.year}-{str(i).zfill(2)}", "nome": nomes_meses[i - 1]}
+            for i in range(1, 13)
+        ]
 
         sql = """
             SELECT
@@ -257,7 +267,7 @@ def dashboard():
                 ON t.categoria_id = c.id
             WHERE
                 t.usuario_id = %s
-                AND DATE_FORMAT(t.data, '%Y-%m') = %s
+                AND DATE_FORMAT(t.data, '%%Y-%%m') = %s
             ORDER BY
                 t.data DESC,
                 t.id DESC
@@ -329,6 +339,9 @@ def dashboard():
 
         return render_template(
             "dashboard.html",
+            usuario=usuario_nome,
+            mes_atual=mes_atual,
+            meses=meses,
             transacoes=transacoes,
             receitas=receitas,
             despesas=despesas,
@@ -376,19 +389,23 @@ def nova_transacao():
                     "%Y-%m-%d"
                 ).date()
 
+            if not data_transacao:
+                return "Informe a data da transação."
+
             conexao = conectar_banco()
             cursor = conexao.cursor()
 
             cursor.execute(
                 """
                 INSERT INTO transacoes
-                (descricao, valor, tipo, data, categoria_id, usuario_id)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                (descricao, valor, tipo, data, data_transacao, categoria_id, usuario_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """,
                 (
                     descricao,
                     valor,
                     tipo,
+                    data_transacao,
                     data_transacao,
                     categoria_id if categoria_id else None,
                     session["usuario_id"]
@@ -467,6 +484,9 @@ def editar_transacao(id):
                     "%Y-%m-%d"
                 ).date()
 
+            if not data_transacao:
+                return "Informe a data da transação."
+
             cursor.execute(
                 """
                 UPDATE transacoes
@@ -475,7 +495,8 @@ def editar_transacao(id):
                     valor = %s,
                     tipo = %s,
                     categoria_id = %s,
-                    data = %s
+                    data = %s,
+                    data_transacao = %s
                 WHERE
                     id = %s
                     AND usuario_id = %s
@@ -485,6 +506,7 @@ def editar_transacao(id):
                     valor,
                     tipo,
                     categoria_id if categoria_id else None,
+                    data_transacao,
                     data_transacao,
                     id,
                     session["usuario_id"]
