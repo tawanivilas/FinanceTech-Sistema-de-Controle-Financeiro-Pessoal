@@ -2,267 +2,888 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>FinanceTech - Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FinanceTech - Visão Geral</title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; margin: 0; background-color: #f4f6f9; }
-        .header { display: flex; justify-content: space-between; align-items: center; background: #333; color: #fff; padding: 12px 20px; }
-        .header a { color: #ff6b6b; text-decoration: none; font-weight: bold; }
-        
-        .main-layout { display: flex; min-height: calc(100vh - 60px); }
-        
-        /* Menu Lateral de Meses */
-        .sidebar { width: 220px; background: #fff; border-right: 1px solid #ddd; padding: 15px; }
-        .sidebar h4 { margin-top: 0; color: #555; }
-        .sidebar ul { list-style: none; padding: 0; margin: 0; }
-        .sidebar li { margin-bottom: 8px; }
-        .sidebar a { display: block; padding: 8px 12px; border-radius: 4px; color: #333; text-decoration: none; background: #f8f9fa; }
-        .sidebar a:hover, .sidebar a.active { background: #007bff; color: white; font-weight: bold; }
+        :root {
+            --bg-body: #f8fafc;
+            --surface: #ffffff;
 
-        .content { flex: 1; padding: 20px; }
-        .card-form { background: white; padding: 20px; border-radius: 5px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .form-row { display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; }
-        .form-group { display: flex; flex-direction: column; }
-        label { margin-bottom: 5px; font-weight: bold; font-size: 13px; }
-        input, select, button { padding: 8px; border-radius: 4px; border: 1px solid #ccc; }
-        button { background-color: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; height: 36px; padding: 0 18px; }
-        
-        table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        
-        .status-pago { color: #28a745; font-weight: bold; background: #e6f4ea; padding: 3px 8px; border-radius: 12px; font-size: 12px; }
-        .status-pendente { color: #dc3545; font-weight: bold; background: #fce8e6; padding: 3px 8px; border-radius: 12px; font-size: 12px; }
-        .btn-edit { background: #ffc107; color: #333; padding: 5px 10px; text-decoration: none; border-radius: 3px; font-size: 12px; font-weight: bold; margin-right: 5px; border: none; cursor: pointer; }
-        .btn-delete { background: #dc3545; color: white; padding: 5px 10px; text-decoration: none; border-radius: 3px; font-size: 12px; font-weight: bold; }
-        
-        /* Modal de Edição */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 20px; border-radius: 5px; width: 400px; }
-    </style>
-</head>
-<body>
+            /* Sidebar amarelo-claro */
+            --sidebar-bg: #fff3cd;
+            --sidebar-text: #664d03;
+            --sidebar-active: #ffc107;
 
-    <div class="header">
-        <h2>FinanceTech</h2>
-        <div>
-            <span>Olá, <strong>{{ usuario }}</strong>!</span> | 
-            <a href="/logout">Sair</a>
-        </div>
-    </div>
+            --primary: #2563eb;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
 
-    <div class="main-layout">
-        <!-- Menu Lateral: 12 Meses -->
-        <div class="sidebar">
-            <h4>📅 Consultar Mês</h4>
-            <ul>
-                {% for m in meses %}
-                <li>
-                    <a href="/dashboard?mes={{ m.codigo }}" class="{% if m.codigo == mes_atual %}active{% endif %}">
-                        {{ m.nome }}
-                    </a>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: Arial, Helvetica, sans-serif;
+        }
 
-        <!-- Conteúdo Principal -->
-        <div class="content">
-            <div class="card-form">
-                <h3>Nova Transação (Mês {{ mes_atual }})</h3>
-                <form action="/nova-transacao" method="POST">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Descrição</label>
-                            <input type="text" name="descricao" required placeholder="Ex: Conta de Luz">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Valor (R$)</label>
-                            <input type="number" step="0.01" name="valor" required placeholder="150.00">
-                        </div>
+        /* =========================
+           SIDEBAR
+        ========================= */
 
-                        <div class="form-group">
-                            <label>Tipo</label>
-                            <select name="tipo" id="tipo" onchange="toggleCamposDespesa()" required>
-                                <option value="despesa">Despesa</option>
-                                <option value="receita">Receita</option>
-                            </select>
-                        </div>
+        .sidebar {
+            min-height: 100vh;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            border-right: 1px solid #f0d98c;
+        }
 
-                        <div class="form-group" id="group-subtipo">
-                            <label>Classificação</label>
-                            <select name="subtipo_despesa" id="subtipo_despesa" onchange="toggleCamposTemporarios()">
-                                <option value="fixa">Fixa</option>
-                                <option value="variavel">Variável</option>
-                                <option value="temporaria">Temporária (Com Prazo)</option>
-                            </select>
-                        </div>
+        .sidebar .brand {
+            color: #664d03;
+            font-size: 1.4rem;
+            font-weight: bold;
+            padding: 20px;
+            border-bottom: 1px solid #f0d98c;
+        }
 
-                        <div class="form-group">
-                            <label>Categoria</label>
-                            <select name="categoria_id" required>
-                                {% for cat in categorias %}
-                                    <option value="{{ cat.id }}">{{ cat.nome }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+        .sidebar .nav-link {
+            color: var(--sidebar-text);
+            padding: 12px 20px;
+            margin: 4px 10px;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
 
-                        <div class="form-group">
-                            <label>Data</label>
-                            <input type="date" name="data_transacao" required>
-                        </div>
+        .sidebar .nav-link i {
+            width: 25px;
+            margin-right: 8px;
+        }
 
-                        <div class="form-group" style="flex-direction: row; align-items: center; gap: 5px; height: 36px;">
-                            <input type="checkbox" id="pago" name="pago" value="1" style="margin: 0;">
-                            <label for="pago" style="margin: 0; cursor: pointer;">Pago</label>
-                        </div>
-                    </div>
+        .sidebar .nav-link:hover {
+            color: #664d03;
+            background-color: rgba(255, 193, 7, 0.20);
+        }
 
-                    <div class="form-row" id="group-temporarios" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ccc;">
-                        <div class="form-group">
-                            <label>Parcela Atual</label>
-                            <input type="number" name="parcela_atual" min="1" value="1">
-                        </div>
-                        <div class="form-group">
-                            <label>Total de Parcelas</label>
-                            <input type="number" name="total_parcelas" min="1" value="1">
-                        </div>
-                    </div>
+        .sidebar .nav-link.active {
+            background-color: var(--sidebar-active);
+            color: #212529;
+            font-weight: bold;
+        }
 
-                    <div style="margin-top: 15px;">
-                        <button type="submit">Salvar Transação</button>
-                    </div>
-                </form>
-            </div>
+        .sidebar-bottom {
+            padding: 15px;
+            border-top: 1px solid #f0d98c;
+        }
 
-            <!-- Tabela com Botão Editar e Status Pago -->
-            <h3>Lançamentos de {{ mes_atual }}</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Data</th>
-                        <th>Descrição</th>
-                        <th>Categoria</th>
-                        <th>Valor</th>
-                        <th>Status</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for t in transacoes %}
-                    <tr>
-                        <td>{{ t.data_transacao }}</td>
-                        <td>
-                            <strong>{{ t.descricao }}</strong>
-                            {% if t.subtipo_despesa %}
-                                <br><small style="color: #666;">({{ t.subtipo_despesa.upper() }})</small>
-                            {% endif %}
-                        </td>
-                        <td>{{ t.categoria or 'Sem categoria' }}</td>
-                        <td style="color: {% if t.tipo == 'receita' %}green{% else %}red{% endif %}; font-weight: bold;">
-                            R$ {{ "%.2f"|format(t.valor) }}
-                        </td>
-                        <td>
-                            {% if t.pago %}
-                                <span class="status-pago">✔ Pago</span>
-                            {% else %}
-                                <span class="status-pendente">⏳ Pendente</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <button class="btn-edit" onclick="abrirModalEdicao({{ t.id }}, '{{ t.descricao }}', {{ t.valor }}, '{{ t.tipo }}', '{{ t.data_transacao }}', {{ t.categoria_id or 0 }}, {{ 1 if t.pago else 0 }})">Editar</button>
-                            <a href="/excluir-transacao/{{ t.id }}?mes={{ mes_atual }}" class="btn-delete" onclick="return confirm('Excluir este lançamento?')">Excluir</a>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" style="text-align: center;">Nenhum lançamento neste mês.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+        /* =========================
+           CONTEÚDO PRINCIPAL
+        ========================= */
 
-    <!-- Modal de Edição -->
-    <div id="modalEdicao" class="modal">
-        <div class="modal-content">
-            <h3>Editar Transação</h3>
-            <form id="formEdicao" method="POST">
-                <div class="form-group" style="margin-bottom: 10px;">
-                    <label>Descrição</label>
-                    <input type="text" id="edit-descricao" name="descricao" required>
-                </div>
-                <div class="form-group" style="margin-bottom: 10px;">
-                    <label>Valor (R$)</label>
-                    <input type="number" step="0.01" id="edit-valor" name="valor" required>
-                </div>
-                <div class="form-group" style="margin-bottom: 10px;">
-                    <label>Tipo</label>
-                    <select id="edit-tipo" name="tipo" required>
-                        <option value="despesa">Despesa</option>
-                        <option value="receita">Receita</option>
-                    </select>
-                </div>
-                <div class="form-group" style="margin-bottom: 10px;">
-                    <label>Categoria</label>
-                    <select id="edit-categoria" name="categoria_id">
-                        {% for cat in categorias %}
-                            <option value="{{ cat.id }}">{{ cat.nome }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-group" style="margin-bottom: 10px;">
-                    <label>Data</label>
-                    <input type="date" id="edit-data" name="data_transacao" required>
-                </div>
-                <div class="form-group" style="flex-direction: row; gap: 10px; margin-bottom: 15px;">
-                    <input type="checkbox" id="edit-pago" name="pago" value="1">
-                    <label for="edit-pago">Pago</label>
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" onclick="fecharModal()" style="background: #6c757d;">Cancelar</button>
-                    <button type="submit">Salvar Alterações</button>
-                </div>
-            </form>
-        </div>
-    </div>
+        .main-content {
+            padding: 30px;
+        }
 
-    <script>
-        function toggleCamposDespesa() {
-            const tipo = document.getElementById('tipo').value;
-            const groupSubtipo = document.getElementById('group-subtipo');
-            const groupTemporarios = document.getElementById('group-temporarios');
-            if (tipo === 'receita') {
-                groupSubtipo.style.display = 'none';
-                groupTemporarios.style.display = 'none';
-            } else {
-                groupSubtipo.style.display = 'flex';
-                toggleCamposTemporarios();
+        .page-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .page-subtitle {
+            color: var(--text-muted);
+            margin-bottom: 25px;
+        }
+
+        /* =========================
+           CARDS
+        ========================= */
+
+        .dashboard-card {
+            background-color: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 22px;
+            height: 100%;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
+
+        .dashboard-card .card-title {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .dashboard-card .card-value {
+            font-size: 1.7rem;
+            font-weight: bold;
+        }
+
+        .card-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        /* =========================
+           GRÁFICO
+        ========================= */
+
+        .chart-card {
+            background-color: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+        }
+
+        /* =========================
+           TABELA
+        ========================= */
+
+        .table-card {
+            background-color: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
+
+        /* =========================
+           RESPONSIVIDADE
+        ========================= */
+
+        @media (max-width: 768px) {
+
+            .sidebar {
+                min-height: auto;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .chart-container {
+                height: 280px;
             }
         }
+    </style>
+</head>
 
-        function toggleCamposTemporarios() {
-            const subtipo = document.getElementById('subtipo_despesa').value;
-            const groupTemporarios = document.getElementById('group-temporarios');
-            groupTemporarios.style.display = (subtipo === 'temporaria') ? 'flex' : 'none';
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- =========================
+             SIDEBAR
+        ========================= -->
+
+        <aside class="col-md-3 col-lg-2 px-0 sidebar">
+
+            <div class="brand">
+                <i class="fa-solid fa-wallet text-primary"></i>
+                FinanceTech
+            </div>
+
+            <nav class="nav flex-column mt-3">
+
+                <!-- Visão Geral -->
+                <a class="nav-link active" href="{{ url_for('dashboard') }}">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    Visão Geral
+                </a>
+
+                <!-- Metas -->
+                <a class="nav-link" href="{{ url_for('metas') }}">
+                    <i class="fa-solid fa-bullseye"></i>
+                    Metas
+                </a>
+
+            </nav>
+
+            <!-- Sair -->
+            <div class="sidebar-bottom mt-4">
+
+                <a
+                    href="{{ url_for('logout') }}"
+                    class="nav-link text-danger"
+                >
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Sair
+                </a>
+
+            </div>
+
+        </aside>
+
+
+        <!-- =========================
+             CONTEÚDO
+        ========================= -->
+
+        <main class="col-md-9 col-lg-10 main-content">
+
+            <!-- Cabeçalho -->
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+
+                <div>
+                    <h2 class="page-title">
+                        Visão Geral
+                    </h2>
+
+                    <p class="page-subtitle">
+                        Olá, {{ usuario.nome }}! Acompanhe sua situação financeira.
+                    </p>
+                </div>
+
+                <!-- Seleção de mês -->
+
+                <div>
+                    <form method="GET">
+
+                        <select
+                            name="mes"
+                            class="form-select"
+                            onchange="this.form.submit()"
+                        >
+
+                            {% for mes in meses %}
+
+                                <option
+                                    value="{{ mes }}"
+                                    {% if mes == mes_atual %}selected{% endif %}
+                                >
+                                    {{ mes }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </form>
+                </div>
+
+            </div>
+
+
+            <!-- =========================
+                 CARDS FINANCEIROS
+            ========================= -->
+
+            <div class="row g-4 mb-4">
+
+                <!-- RECEITAS -->
+
+                <div class="col-md-4">
+
+                    <div class="dashboard-card">
+
+                        <div class="d-flex justify-content-between align-items-center">
+
+                            <div>
+
+                                <div class="card-title">
+                                    Total de Receitas
+                                </div>
+
+                                <div class="card-value text-success">
+                                    R$ {{ "%.2f"|format(total_receitas) }}
+                                </div>
+
+                            </div>
+
+                            <div class="card-icon bg-success-subtle text-success">
+                                <i class="fa-solid fa-arrow-trend-up"></i>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- DESPESAS -->
+
+                <div class="col-md-4">
+
+                    <div class="dashboard-card">
+
+                        <div class="d-flex justify-content-between align-items-center">
+
+                            <div>
+
+                                <div class="card-title">
+                                    Total de Despesas
+                                </div>
+
+                                <div class="card-value text-danger">
+                                    R$ {{ "%.2f"|format(total_despesas) }}
+                                </div>
+
+                            </div>
+
+                            <div class="card-icon bg-danger-subtle text-danger">
+                                <i class="fa-solid fa-arrow-trend-down"></i>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- SALDO -->
+
+                <div class="col-md-4">
+
+                    <div class="dashboard-card">
+
+                        <div class="d-flex justify-content-between align-items-center">
+
+                            <div>
+
+                                <div class="card-title">
+                                    Saldo do Mês
+                                </div>
+
+                                <div
+                                    class="card-value
+                                    {% if saldo_mes >= 0 %}
+                                        text-primary
+                                    {% else %}
+                                        text-danger
+                                    {% endif %}"
+                                >
+                                    R$ {{ "%.2f"|format(saldo_mes) }}
+                                </div>
+
+                            </div>
+
+                            <div class="card-icon bg-primary-subtle text-primary">
+                                <i class="fa-solid fa-wallet"></i>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================
+                 GRÁFICO DE DESPESAS
+            ========================= -->
+
+            <div class="row g-4 mb-4">
+
+                <div class="col-12">
+
+                    <div class="chart-card">
+
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+
+                            <div>
+
+                                <h5 class="mb-1">
+                                    Despesas no Mês por Categoria
+                                </h5>
+
+                                <small class="text-muted">
+                                    Distribuição das suas despesas
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                        <div class="chart-container">
+
+                            <canvas id="despesasChart"></canvas>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================
+                 TRANSAÇÕES RECENTES
+            ========================= -->
+
+            <div class="table-card">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+
+                    <div>
+
+                        <h5 class="mb-1">
+                            Transações Recentes
+                        </h5>
+
+                        <small class="text-muted">
+                            Últimos lançamentos financeiros
+                        </small>
+
+                    </div>
+
+                    <button
+                        class="btn btn-primary"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalNovaTransacao"
+                    >
+                        <i class="fa-solid fa-plus"></i>
+                        Nova Transação
+                    </button>
+
+                </div>
+
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Descrição
+                                </th>
+
+                                <th>
+                                    Categoria
+                                </th>
+
+                                <th>
+                                    Tipo
+                                </th>
+
+                                <th>
+                                    Valor
+                                </th>
+
+                                <th>
+                                    Data
+                                </th>
+
+                                <th>
+                                    Ações
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for transacao in transacoes %}
+
+                            <tr>
+
+                                <td>
+                                    {{ transacao.descricao }}
+                                </td>
+
+                                <td>
+                                    {{ transacao.categoria }}
+                                </td>
+
+                                <td>
+
+                                    {% if transacao.tipo == 'receita' %}
+
+                                        <span class="badge bg-success">
+                                            Receita
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="badge bg-danger">
+                                            Despesa
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td>
+
+                                    {% if transacao.tipo == 'receita' %}
+
+                                        <span class="text-success fw-bold">
+                                            + R$ {{ "%.2f"|format(transacao.valor) }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="text-danger fw-bold">
+                                            - R$ {{ "%.2f"|format(transacao.valor) }}
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td>
+                                    {{ transacao.data }}
+                                </td>
+
+                                <td>
+
+                                    <button
+                                        class="btn btn-sm btn-outline-primary"
+                                        onclick="editarTransacao({{ transacao.id }})"
+                                    >
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+
+                                    <button
+                                        class="btn btn-sm btn-outline-danger"
+                                        onclick="excluirTransacao({{ transacao.id }})"
+                                    >
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+                            {% else %}
+
+                            <tr>
+
+                                <td
+                                    colspan="6"
+                                    class="text-center text-muted py-4"
+                                >
+                                    Nenhuma transação cadastrada.
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+</div>
+
+
+<!-- =========================
+     MODAL NOVA TRANSAÇÃO
+========================= -->
+
+<div
+    class="modal fade"
+    id="modalNovaTransacao"
+    tabindex="-1"
+    aria-hidden="true"
+>
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    Nova Transação
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                ></button>
+
+            </div>
+
+            <form method="POST" action="{{ url_for('nova_transacao') }}">
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Descrição
+                        </label>
+
+                        <input
+                            type="text"
+                            name="descricao"
+                            class="form-control"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Valor
+                        </label>
+
+                        <input
+                            type="number"
+                            name="valor"
+                            class="form-control"
+                            step="0.01"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Tipo
+                        </label>
+
+                        <select
+                            name="tipo"
+                            class="form-select"
+                            required
+                        >
+
+                            <option value="receita">
+                                Receita
+                            </option>
+
+                            <option value="despesa">
+                                Despesa
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Categoria
+                        </label>
+
+                        <select
+                            name="categoria"
+                            class="form-select"
+                            required
+                        >
+
+                            {% for categoria in categorias %}
+
+                                <option value="{{ categoria.nome }}">
+                                    {{ categoria.nome }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Data
+                        </label>
+
+                        <input
+                            type="date"
+                            name="data"
+                            class="form-control"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        Salvar
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- Bootstrap JS -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+
+<!-- Chart.js -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/chart.js">
+</script>
+
+
+<script>
+
+    /* =========================
+       GRÁFICO DE DESPESAS
+    ========================= */
+
+    const dadosCategorias = {{ despesas_cat_mes | tojson }};
+
+    const labels = Object.keys(dadosCategorias);
+
+    const valores = Object.values(dadosCategorias);
+
+
+    const ctx = document.getElementById('despesasChart');
+
+
+    if (ctx) {
+
+        new Chart(ctx, {
+
+            type: 'doughnut',
+
+            data: {
+
+                labels: labels,
+
+                datasets: [{
+
+                    data: valores,
+
+                    backgroundColor: [
+                        '#2563eb',
+                        '#dc2626',
+                        '#16a34a',
+                        '#f59e0b',
+                        '#9333ea',
+                        '#0891b2',
+                        '#ea580c',
+                        '#4f46e5'
+                    ],
+
+                    borderWidth: 1
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                plugins: {
+
+                    legend: {
+
+                        position: 'right'
+
+                    }
+
+                }
+
+            }
+
+        });
+
+    }
+
+
+    /* =========================
+       EDITAR TRANSAÇÃO
+    ========================= */
+
+    function editarTransacao(id) {
+
+        window.location.href =
+            '/editar-transacao/' + id;
+
+    }
+
+
+    /* =========================
+       EXCLUIR TRANSAÇÃO
+    ========================= */
+
+    function excluirTransacao(id) {
+
+        if (
+            confirm(
+                'Tem certeza que deseja excluir esta transação?'
+            )
+        ) {
+
+            window.location.href =
+                '/excluir-transacao/' + id;
+
         }
 
-        function abrirModalEdicao(id, descricao, valor, tipo, data, categoriaId, pago) {
-            document.getElementById('formEdicao').action = '/editar-transacao/' + id;
-            document.getElementById('edit-descricao').value = descricao;
-            document.getElementById('edit-valor').value = valor;
-            document.getElementById('edit-tipo').value = tipo;
-            document.getElementById('edit-data').value = data;
-            document.getElementById('edit-categoria').value = categoriaId;
-            document.getElementById('edit-pago').checked = (pago === 1);
-            document.getElementById('modalEdicao').style.display = 'flex';
-        }
+    }
 
-        function fecharModal() {
-            document.getElementById('modalEdicao').style.display = 'none';
-        }
-    </script>
+</script>
+
 </body>
 </html>

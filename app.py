@@ -249,18 +249,17 @@ def dashboard():
         hoje = date.today()
         mes_atual = request.args.get("mes", hoje.strftime("%Y-%m"))
 
-        nomes_meses = [
-            "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-        ]
-        meses = [
-            {"codigo": f"{hoje.year}-{str(i).zfill(2)}", "nome": nomes_meses[i - 1]}
-            for i in range(1, 13)
-        ]
+        # Lista de meses do ano atual, no formato "YYYY-MM"
+        meses = [f"{hoje.year}-{str(i).zfill(2)}" for i in range(1, 13)]
 
         sql = """
             SELECT
-                t.*,
+                t.id,
+                t.descricao,
+                t.valor,
+                t.tipo,
+                t.data,
+                t.categoria_id,
                 c.nome AS categoria
             FROM transacoes t
             LEFT JOIN categorias c
@@ -278,64 +277,38 @@ def dashboard():
 
         for t in transacoes:
             data_original = t.get("data")
-
             if isinstance(data_original, (datetime, date)):
-                t["data_transacao"] = data_original.strftime("%Y-%m-%d")
+                t["data"] = data_original.strftime("%Y-%m-%d")
             elif data_original:
-                try:
-                    data_convertida = datetime.strptime(
-                        str(data_original)[:10],
-                        "%Y-%m-%d"
-                    ).date()
-                    t["data_transacao"] = str(data_convertida)
-                except Exception:
-                    t["data_transacao"] = str(data_original)
+                t["data"] = str(data_original)[:10]
             else:
-                t["data_transacao"] = ""
+                t["data"] = ""
 
-        receitas = sum(
+            if not t.get("categoria"):
+                t["categoria"] = "Sem categoria"
+
+        total_receitas = sum(
             float(t["valor"])
             for t in transacoes
             if t.get("tipo") == "receita"
         )
 
-        despesas = sum(
+        total_despesas = sum(
             float(t["valor"])
             for t in transacoes
             if t.get("tipo") == "despesa"
         )
 
-        saldo = receitas - despesas
+        saldo_mes = total_receitas - total_despesas
 
-        despesas_categoria = {}
+        despesas_cat_mes = {}
         for t in transacoes:
             if t.get("tipo") != "despesa":
                 continue
 
             categoria = t.get("categoria") or "Sem categoria"
             valor = float(t.get("valor", 0) or 0)
-            despesas_categoria[categoria] = despesas_categoria.get(categoria, 0) + valor
-
-        sql_ano = """
-            SELECT
-                t.valor,
-                c.nome AS categoria
-            FROM transacoes t
-            LEFT JOIN categorias c
-                ON t.categoria_id = c.id
-            WHERE
-                t.usuario_id = %s
-                AND t.tipo = 'despesa'
-                AND YEAR(t.data) = %s
-        """
-
-        cursor.execute(sql_ano, (usuario_id, hoje.year))
-        despesas_ano = cursor.fetchall()
-
-        total_despesas_ano = sum(
-            float(t["valor"])
-            for t in despesas_ano
-        )
+            despesas_cat_mes[categoria] = despesas_cat_mes.get(categoria, 0) + valor
 
         cursor.execute(
             """
@@ -348,16 +321,14 @@ def dashboard():
 
         return render_template(
             "dashboard.html",
-            usuario=usuario_nome,
+            usuario={"nome": usuario_nome},
             mes_atual=mes_atual,
             meses=meses,
             transacoes=transacoes,
-            receitas=receitas,
-            despesas=despesas,
-            saldo=saldo,
-            despesas_categoria=despesas_categoria,
-            despesas_ano=despesas_ano,
-            total_despesas_ano=total_despesas_ano,
+            total_receitas=total_receitas,
+            total_despesas=total_despesas,
+            saldo_mes=saldo_mes,
+            despesas_cat_mes=despesas_cat_mes,
             categorias=categorias
         )
 
@@ -384,8 +355,8 @@ def nova_transacao():
         descricao = request.form.get("descricao", "").strip()
         valor_str = request.form.get("valor", "0").replace(",", ".")
         tipo = request.form.get("tipo", "")
-        categoria_id = request.form.get("categoria_id")
-        data_transacao_str = request.form.get("data_transacao")
+        categoria_nome = request.form.get("categoria", "").strip()
+        data_str = request.form.get("data")
 
         try:
             valor = float(valor_str)
@@ -393,9 +364,9 @@ def nova_transacao():
                 return "O valor deve ser maior que zero."
 
             data_transacao = None
-            if data_transacao_str:
+            if data_str:
                 data_transacao = datetime.strptime(
-                    data_transacao_str,
+                    data_str,
                     "%Y-%m-%d"
                 ).date()
 
@@ -404,6 +375,21 @@ def nova_transacao():
 
             conexao = conectar_banco()
             cursor = conexao.cursor()
+
+            categoria_id = None
+            if categoria_nome:
+                cursor.execute(
+                    """
+                    SELECT id
+                    FROM categorias
+                    WHERE nome = %s
+                    LIMIT 1
+                    """,
+                    (categoria_nome,)
+                )
+                linha_categoria = cursor.fetchone()
+                if linha_categoria:
+                    categoria_id = linha_categoria[0]
 
             cursor.execute(
                 """
@@ -417,7 +403,7 @@ def nova_transacao():
                     tipo,
                     data_transacao,
                     data_transacao,
-                    categoria_id if categoria_id else None,
+                    categoria_id,
                     session["usuario_id"]
                 )
             )
