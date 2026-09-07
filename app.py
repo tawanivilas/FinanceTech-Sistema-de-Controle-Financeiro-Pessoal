@@ -512,7 +512,6 @@ def lancamentos():
         parametros = [usuario_id]
         hoje = date.today()
 
-        # Suporte para ambos os formatos de filtro de data
         if periodo in ["mes", "este_mes"]:
             primeiro_dia = hoje.replace(day=1)
             proximo_mes = primeiro_dia + relativedelta(months=1)
@@ -617,7 +616,6 @@ def nova_transacao():
 
     usuario_id = session["usuario_id"]
 
-    # Evita erro 500 no GET caso não exista nova_transacao.html solto
     if request.method == "GET":
         return redirect(url_for("lancamentos"))
 
@@ -884,6 +882,305 @@ def excluir_transacao(transacao_id):
         app.logger.exception("Erro inesperado ao excluir transação")
         flash("Ocorreu um erro inesperado.", "danger")
         return redirect(url_for("lancamentos"))
+
+    finally:
+        fechar_banco(cursor, conexao)
+
+
+# =========================================================
+# METAS
+# =========================================================
+
+@app.route("/metas")
+def metas():
+
+    if "usuario_id" not in session:
+        return redirect(url_for("login"))
+
+    usuario_id = session["usuario_id"]
+
+    conexao = None
+    cursor = None
+
+    try:
+        conexao = conectar_banco()
+        cursor = conexao.cursor(dictionary=True)
+
+        cursor.execute(
+            """
+            SELECT
+                m.id,
+                m.titulo AS nome,
+                m.valor_alvo AS valor_meta,
+                m.valor_atual,
+                m.data_limite AS prazo,
+                c.nome AS categoria
+            FROM metas m
+            LEFT JOIN categorias c
+                ON m.categoria_id = c.id
+            WHERE m.usuario_id = %s
+            ORDER BY
+                m.data_limite ASC,
+                m.id DESC
+            """,
+            (usuario_id,)
+        )
+
+        metas_lista = cursor.fetchall()
+
+        for meta in metas_lista:
+
+            valor_meta = float(meta["valor_meta"] or 0)
+            valor_atual = float(meta["valor_atual"] or 0)
+
+            if valor_meta > 0:
+                porcentagem = (valor_atual / valor_meta) * 100
+            else:
+                porcentagem = 0
+
+            meta["porcentagem"] = round(max(0, min(100, porcentagem)), 1)
+
+            if meta["prazo"]:
+                if isinstance(meta["prazo"], (date, datetime)):
+                    meta["prazo"] = meta["prazo"].strftime("%d/%m/%Y")
+
+        return render_template("metas.html", metas=metas_lista)
+
+    except Error:
+        app.logger.exception("Erro ao carregar metas")
+        flash("Erro ao carregar metas.", "danger")
+        return render_template("metas.html", metas=[])
+
+    except Exception:
+        app.logger.exception("Erro inesperado ao carregar metas")
+        flash("Ocorreu um erro inesperado ao carregar as metas.", "danger")
+        return render_template("metas.html", metas=[])
+
+    finally:
+        fechar_banco(cursor, conexao)
+
+
+# =========================================================
+# NOVA META
+# =========================================================
+
+@app.route("/nova-meta", methods=["POST"])
+@app.route("/cadastrar-meta", methods=["POST"])
+@app.route("/nova_meta", methods=["POST"])
+def nova_meta():
+
+    if "usuario_id" not in session:
+        return redirect(url_for("login"))
+
+    usuario_id = session["usuario_id"]
+
+    nome = request.form.get("nome", "").strip()
+    categoria_nome = request.form.get("categoria", "").strip()
+    valor_meta_str = request.form.get("valor_meta", "").strip()
+    prazo = request.form.get("prazo", "").strip()
+
+    if not nome:
+        flash("Informe o nome da meta.", "warning")
+        return redirect(url_for("metas"))
+
+    valor_meta = converter_valor(valor_meta_str)
+
+    if valor_meta is None or valor_meta <= 0:
+        flash("Informe um valor válido para a meta.", "warning")
+        return redirect(url_for("metas"))
+
+    data_limite = None
+
+    if prazo:
+        try:
+            data_limite = datetime.strptime(prazo, "%Y-%m-%d").date()
+        except ValueError:
+            flash("Data limite inválida.", "warning")
+            return redirect(url_for("metas"))
+
+    conexao = None
+    cursor = None
+
+    try:
+        conexao = conectar_banco()
+
+        categoria_id = None
+
+        if categoria_nome:
+            cursor = conexao.cursor(dictionary=True)
+
+            cursor.execute(
+                """
+                SELECT id
+                FROM categorias
+                WHERE LOWER(nome) = LOWER(%s)
+                  AND (usuario_id IS NULL OR usuario_id = %s)
+                LIMIT 1
+                """,
+                (categoria_nome, usuario_id)
+            )
+
+            categoria = cursor.fetchone()
+            cursor.close()
+            cursor = None
+
+            if categoria:
+                categoria_id = categoria["id"]
+
+        cursor = conexao.cursor()
+
+        cursor.execute(
+            """
+            INSERT INTO metas
+            (usuario_id, titulo, categoria_id, valor_alvo, valor_atual, data_limite)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            """,
+            (usuario_id, nome, categoria_id, valor_meta, 0, data_limite)
+        )
+
+        conexao.commit()
+        flash("Meta criada com sucesso!", "success")
+        return redirect(url_for("metas"))
+
+    except Error:
+        if conexao:
+            conexao.rollback()
+        app.logger.exception("Erro ao cadastrar meta")
+        flash("Erro ao cadastrar meta. Verifique os dados informados.", "danger")
+        return redirect(url_for("metas"))
+
+    except Exception:
+        if conexao:
+            conexao.rollback()
+        app.logger.exception("Erro inesperado ao cadastrar meta")
+        flash("Ocorreu um erro inesperado ao salvar a meta.", "danger")
+        return redirect(url_for("metas"))
+
+    finally:
+        fechar_banco(cursor, conexao)
+
+
+# =========================================================
+# DEPOSITAR NA META
+# =========================================================
+
+@app.route("/depositar-meta/<int:id>", methods=["POST"])
+def depositar_meta(id):
+
+    if "usuario_id" not in session:
+        return redirect(url_for("login"))
+
+    usuario_id = session["usuario_id"]
+
+    valor_str = request.form.get("valor", "").strip()
+    valor = converter_valor(valor_str)
+
+    if valor is None or valor <= 0:
+        flash("Informe um valor válido.", "warning")
+        return redirect(url_for("metas"))
+
+    conexao = None
+    cursor = None
+
+    try:
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+
+        cursor.execute(
+            """
+            SELECT id
+            FROM metas
+            WHERE id = %s AND usuario_id = %s
+            """,
+            (id, usuario_id)
+        )
+
+        meta = cursor.fetchone()
+
+        if not meta:
+            flash("Meta não encontrada.", "warning")
+            return redirect(url_for("metas"))
+
+        cursor.execute(
+            """
+            UPDATE metas
+            SET valor_atual = COALESCE(valor_atual, 0) + %s
+            WHERE id = %s AND usuario_id = %s
+            """,
+            (valor, id, usuario_id)
+        )
+
+        conexao.commit()
+        flash("Aporte realizado com sucesso!", "success")
+        return redirect(url_for("metas"))
+
+    except Error:
+        if conexao:
+            conexao.rollback()
+        app.logger.exception("Erro ao depositar na meta")
+        flash("Erro ao realizar o aporte.", "danger")
+        return redirect(url_for("metas"))
+
+    except Exception:
+        if conexao:
+            conexao.rollback()
+        app.logger.exception("Erro inesperado ao depositar na meta")
+        flash("Erro inesperado ao realizar o aporte.", "danger")
+        return redirect(url_for("metas"))
+
+    finally:
+        fechar_banco(cursor, conexao)
+
+
+# =========================================================
+# EXCLUIR META
+# =========================================================
+
+@app.route("/excluir-meta/<int:id>", methods=["GET", "POST"])
+def excluir_meta(id):
+
+    if "usuario_id" not in session:
+        return redirect(url_for("login"))
+
+    usuario_id = session["usuario_id"]
+
+    conexao = None
+    cursor = None
+
+    try:
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+
+        cursor.execute(
+            """
+            DELETE FROM metas
+            WHERE id = %s AND usuario_id = %s
+            """,
+            (id, usuario_id)
+        )
+
+        if cursor.rowcount == 0:
+            conexao.rollback()
+            flash("Meta não encontrada.", "warning")
+            return redirect(url_for("metas"))
+
+        conexao.commit()
+        flash("Meta excluída!", "info")
+        return redirect(url_for("metas"))
+
+    except Error:
+        if conexao:
+            conexao.rollback()
+        app.logger.exception("Erro ao excluir meta")
+        flash("Erro ao excluir meta.", "danger")
+        return redirect(url_for("metas"))
+
+    except Exception:
+        if conexao:
+            conexao.rollback()
+        app.logger.exception("Erro inesperado ao excluir meta")
+        flash("Erro inesperado ao excluir a meta.", "danger")
+        return redirect(url_for("metas"))
 
     finally:
         fechar_banco(cursor, conexao)
