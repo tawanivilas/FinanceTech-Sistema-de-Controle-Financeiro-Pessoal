@@ -221,7 +221,7 @@ FinanceTech - Editar lançamento
     <div class="edit-card">
 
         <form
-            action="{{ url_for('editar_transacao', id=transacao.id) }}"
+            action="{{ url_for('editar_transacao', transacao_id=transacao.id) }}"
             method="POST"
         >
 
@@ -427,7 +427,7 @@ FinanceTech - Editar lançamento
                             id="statusPago"
                             name="status_pago"
                             value="Pago"
-                            {% if transacao.pago %}
+                            {% if transacao.pago or transacao.status == 'Pago' %}
                                 checked
                             {% endif %}
                         >
