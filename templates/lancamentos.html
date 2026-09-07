@@ -3,493 +3,633 @@
 {% block title %}FinanceTech - Lançamentos{% endblock %}
 
 {% block styles %}
+
 <style>
-    .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
-    }
 
-    .page-title {
-        font-size: 28px;
-        font-weight: 700;
-        margin: 0;
-        color: #1f2937;
-    }
+    /* =========================================================
+       CARDS
+       ========================================================= */
 
-    .page-subtitle {
-        margin-top: 5px;
-        color: #6b7280;
-        font-size: 14px;
-    }
+    .filter-card,
+    .main-card,
+    .side-form-card {
 
-    .card-custom {
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
+        background-color: #ffffff;
         border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        padding: 20px;
+        color: #1f2937;
+        border: 1px solid #e5e7eb;
+
     }
 
-    .filter-card {
-        padding: 18px;
-        margin-bottom: 20px;
+    /* =========================================================
+       BADGES DE CATEGORIA
+       ========================================================= */
+
+    .badge-cat {
+
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        white-space: nowrap;
+
     }
 
-    .filter-title {
-        font-size: 15px;
-        font-weight: 700;
-        margin-bottom: 14px;
+    .badge-trabalho {
+
+        background-color: #fef9c3;
+        color: #854d0e;
+
+    }
+
+    .badge-alimentacao {
+
+        background-color: #ffedd5;
+        color: #c2410c;
+
+    }
+
+    .badge-casa {
+
+        background-color: #dbeafe;
+        color: #1e40af;
+
+    }
+
+    .badge-transporte {
+
+        background-color: #f3e8ff;
+        color: #6b21a8;
+
+    }
+
+    .badge-outros {
+
+        background-color: #f3f4f6;
         color: #374151;
+
     }
 
-    .form-label {
-        font-size: 13px;
+    .badge-lazer {
+
+        background-color: #dcfce7;
+        color: #166534;
+
+    }
+
+    .badge-saude {
+
+        background-color: #ffe4e6;
+        color: #9f1239;
+
+    }
+
+    /* =========================================================
+       BADGES DE TIPO
+       ========================================================= */
+
+    .badge-tipo-receita {
+
+        background-color: #dcfce7;
+        color: #15803d;
+        padding: 3px 8px;
+        border-radius: 6px;
         font-weight: 600;
-        color: #374151;
-        margin-bottom: 6px;
+        font-size: 0.8rem;
+
     }
 
-    .form-select,
-    .form-control {
-        border-radius: 8px;
-        border: 1px solid #d1d5db;
-        min-height: 38px;
-        font-size: 14px;
-    }
+    .badge-tipo-despesa {
 
-    .form-select:focus,
-    .form-control:focus {
-        border-color: #f59e0b;
-        box-shadow: 0 0 0 0.15rem rgba(245,158,11,0.15);
-    }
-
-    .btn-filter {
-        background: #f59e0b;
-        color: #ffffff;
-        border: none;
-        border-radius: 8px;
+        background-color: #fee2e2;
+        color: #b91c1c;
+        padding: 3px 8px;
+        border-radius: 6px;
         font-weight: 600;
-        min-height: 38px;
-        padding: 0 18px;
+        font-size: 0.8rem;
+
     }
 
-    .btn-filter:hover {
-        background: #d97706;
-        color: #ffffff;
-    }
+    /* =========================================================
+       BADGES DE STATUS
+       ========================================================= */
 
-    .btn-clear {
-        background: #f3f4f6;
-        color: #374151;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
+    .badge-pago {
+
+        background-color: #dcfce7;
+        color: #166534;
+        padding: 3px 10px;
+        border-radius: 12px;
         font-weight: 600;
-        min-height: 38px;
-        padding: 0 18px;
-        text-decoration: none;
+        font-size: 0.75rem;
+
+    }
+
+    .badge-pendente {
+
+        background-color: #fef9c3;
+        color: #854d0e;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.75rem;
+
+    }
+
+    /* =========================================================
+       TABELA
+       ========================================================= */
+
+    .table-lancamentos th {
+
+        color: #6b7280;
+        font-weight: 600;
+        font-size: 0.85rem;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 12px;
+        white-space: nowrap;
+
+    }
+
+    .table-lancamentos td {
+
+        padding: 14px 0;
+        border-bottom: 1px solid #f3f4f6;
+        vertical-align: middle;
+        font-size: 0.9rem;
+
+    }
+
+    .table-lancamentos tbody tr {
+
+        transition: background-color 0.15s ease;
+
+    }
+
+    .table-lancamentos tbody tr:hover {
+
+        background-color: #fafafa;
+
+    }
+
+    /* =========================================================
+       SELEÇÃO RECEITA / DESPESA
+       ========================================================= */
+
+    .btn-type-selector {
+
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 8px;
+        text-align: center;
+        width: 100%;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: block;
+
+    }
+
+    .btn-type-selector:hover {
+
+        background-color: #f9fafb;
+
+    }
+
+    .btn-type-selector.active-receita {
+
+        border-color: #22c55e !important;
+        background-color: #f0fdf4 !important;
+        color: #15803d !important;
+
+    }
+
+    .btn-type-selector.active-despesa {
+
+        border-color: #ef4444 !important;
+        background-color: #fef2f2 !important;
+        color: #b91c1c !important;
+
+    }
+
+    /* =========================================================
+       BOTÕES DE AÇÃO DA TABELA
+       ========================================================= */
+
+    .btn-acao {
+
         display: inline-flex;
         align-items: center;
         justify-content: center;
-    }
-
-    .btn-clear:hover {
-        background: #e5e7eb;
-        color: #111827;
-    }
-
-    .table-card {
-        overflow: hidden;
-    }
-
-    .table-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 18px 20px;
-        border-bottom: 1px solid #e5e7eb;
-    }
-
-    .table-title {
-        font-size: 17px;
-        font-weight: 700;
-        color: #1f2937;
-        margin: 0;
-    }
-
-    .table-count {
-        font-size: 13px;
-        color: #6b7280;
-    }
-
-    .table-responsive {
-        overflow-x: auto;
-    }
-
-    .table {
-        margin: 0;
-        min-width: 850px;
-    }
-
-    .table thead th {
-        background: #f9fafb;
-        color: #6b7280;
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: .03em;
-        font-weight: 700;
-        border-bottom: 1px solid #e5e7eb;
-        padding: 13px 16px;
-        white-space: nowrap;
-    }
-
-    .table tbody td {
-        padding: 14px 16px;
-        vertical-align: middle;
-        border-bottom: 1px solid #f1f5f9;
-        font-size: 14px;
-        color: #374151;
-    }
-
-    .table tbody tr:hover {
-        background: #fafafa;
-    }
-
-    .description {
-        font-weight: 600;
-        color: #111827;
-    }
-
-    .date {
-        color: #6b7280;
-        white-space: nowrap;
-    }
-
-    .badge-tipo {
-        display: inline-flex;
-        align-items: center;
-        padding: 5px 9px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 700;
-    }
-
-    .badge-receita {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    .badge-despesa {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-
-    .badge-status {
-        display: inline-flex;
-        align-items: center;
-        padding: 5px 9px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-
-    .status-pago {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    .status-pendente {
-        background: #fef3c7;
-        color: #92400e;
-    }
-
-    .category-badge {
-        background: #f3f4f6;
-        color: #374151;
-        border-radius: 20px;
-        padding: 5px 9px;
-        font-size: 12px;
-        font-weight: 600;
-        display: inline-block;
-    }
-
-    .valor-receita {
-        color: #15803d;
-        font-weight: 700;
-        white-space: nowrap;
-    }
-
-    .valor-despesa {
-        color: #dc2626;
-        font-weight: 700;
-        white-space: nowrap;
-    }
-
-    .actions {
-        display: flex;
-        gap: 6px;
-        white-space: nowrap;
-    }
-
-    .btn-action {
         width: 32px;
         height: 32px;
         border-radius: 7px;
-        border: 1px solid #e5e7eb;
-        background: #ffffff;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
         text-decoration: none;
-        transition: .2s;
-    }
-
-    .btn-edit {
-        color: #2563eb;
-    }
-
-    .btn-edit:hover {
-        background: #eff6ff;
-        border-color: #bfdbfe;
-    }
-
-    .btn-delete {
-        color: #dc2626;
-    }
-
-    .btn-delete:hover {
-        background: #fef2f2;
-        border-color: #fecaca;
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 55px 20px;
-        color: #6b7280;
-    }
-
-    .empty-state i {
-        font-size: 42px;
-        margin-bottom: 12px;
-        color: #d1d5db;
-    }
-
-    .empty-state h4 {
-        color: #374151;
-        font-size: 17px;
-        font-weight: 700;
-    }
-
-    .new-card {
-        padding: 20px;
-        margin-top: 20px;
-    }
-
-    .new-card-title {
-        font-size: 17px;
-        font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 18px;
-    }
-
-    .tipo-buttons {
-        display: flex;
-        gap: 8px;
-    }
-
-    .tipo-btn {
-        flex: 1;
-        border: 1px solid #d1d5db;
-        background: #ffffff;
-        border-radius: 8px;
-        min-height: 38px;
-        font-weight: 600;
-        font-size: 13px;
-        cursor: pointer;
-    }
-
-    .tipo-btn.receita.active {
-        background: #dcfce7;
-        border-color: #86efac;
-        color: #166534;
-    }
-
-    .tipo-btn.despesa.active {
-        background: #fee2e2;
-        border-color: #fca5a5;
-        color: #991b1b;
-    }
-
-    .btn-save {
-        width: 100%;
-        min-height: 40px;
+        transition: all 0.2s ease;
         border: none;
-        border-radius: 8px;
-        background: #111827;
-        color: #ffffff;
-        font-weight: 700;
-        transition: .2s;
+        background: transparent;
+        cursor: pointer;
+        padding: 0;
+
     }
 
-    .btn-save:hover {
-        background: #000000;
+    .btn-editar {
+
+        color: #6b7280;
+
+    }
+
+    .btn-editar:hover {
+
+        background-color: #f3f4f6;
+        color: #111827;
+
+    }
+
+    .btn-excluir {
+
+        color: #6b7280;
+
+    }
+
+    .btn-excluir:hover {
+
+        background-color: #fef2f2;
+        color: #dc2626;
+
+    }
+
+    /* =========================================================
+       BOTÃO EXPORTAR
+       ========================================================= */
+
+    .btn-exportar {
+
+        transition: all 0.2s ease;
+
+    }
+
+    .btn-exportar:hover {
+
+        background-color: #f3f4f6;
+
+    }
+
+    /* =========================================================
+       FORMULÁRIOS
+       ========================================================= */
+
+    .form-control,
+    .form-select {
+
+        border-color: #e5e7eb;
+
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+
+        border-color: #9ca3af;
+        box-shadow: 0 0 0 0.15rem rgba(107, 114, 128, 0.15);
+
+    }
+
+    /* =========================================================
+       RESPONSIVIDADE
+       ========================================================= */
+
+    @media (max-width: 992px) {
+
+        .table-lancamentos {
+
+            min-width: 850px;
+
+        }
+
     }
 
     @media (max-width: 768px) {
-        .page-header {
-            align-items: flex-start;
-            gap: 15px;
-            flex-direction: column;
+
+        .filter-card,
+        .main-card,
+        .side-form-card {
+
+            padding: 15px;
+
         }
 
-        .table-header {
-            align-items: flex-start;
-            gap: 8px;
-            flex-direction: column;
-        }
     }
+
 </style>
+
 {% endblock %}
 
 
 {% block content %}
 
-<div class="page-header">
+<!-- =========================================================
+     CABEÇALHO
+     ========================================================= -->
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+
     <div>
-        <h2 class="page-title">Lançamentos</h2>
-        <div class="page-subtitle">
-            Gerencie suas receitas e despesas
-        </div>
+
+        <h3 class="fw-bold m-0 text-dark fs-4">
+
+            Lançamentos
+
+        </h3>
+
+        <p class="text-muted small m-0">
+
+            Gerencie todas as suas receitas e despesas.
+
+        </p>
+
     </div>
+
+    <div class="d-flex align-items-center gap-3">
+
+        <i
+            class="fa-regular fa-bell text-secondary fs-5"
+            style="cursor: pointer;"
+        ></i>
+
+        <input
+            type="date"
+            id="headerDate"
+            class="form-control form-control-sm border-0 shadow-sm"
+            style="width: auto;"
+        >
+
+    </div>
+
 </div>
 
 
-<!-- FILTROS -->
-<div class="card-custom filter-card">
+<!-- =========================================================
+     BARRA DE FILTROS
+     ========================================================= -->
 
-    <div class="filter-title">
-        <i class="fas fa-filter me-2"></i>
-        Filtros
-    </div>
+<div class="filter-card shadow-sm mb-4">
 
-    <form method="GET" action="{{ url_for('lancamentos') }}" id="filterForm">
+    <form
+        method="GET"
+        action="{{ url_for('lancamentos') }}"
+        id="filterForm"
+    >
 
-        <div class="row g-3">
+        <div class="row g-2 mb-3">
 
             <!-- PERÍODO -->
+
             <div class="col-md-3">
-                <label class="form-label">Período</label>
 
-                <select name="periodo" class="form-select form-select-sm">
+                <label class="form-label small fw-semibold text-secondary">
 
-                    <option value="todos"
-                        {% if periodo == 'todos' %}selected{% endif %}>
-                        Todos
-                    </option>
+                    Período
 
-                    <option value="mes"
-                        {% if periodo == 'mes' %}selected{% endif %}>
+                </label>
+
+                <select
+                    name="periodo"
+                    id="selectPeriodo"
+                    class="form-select form-select-sm"
+                >
+
+                    <option
+                        value="este_mes"
+                        {% if request.args.get('periodo', 'este_mes') == 'este_mes' %}selected{% endif %}
+                    >
+
                         Este mês
+
                     </option>
 
-                    <option value="7dias"
-                        {% if periodo == '7dias' %}selected{% endif %}>
-                        Últimos 7 dias
+                    <option
+                        value="hoje"
+                        {% if request.args.get('periodo') == 'hoje' %}selected{% endif %}
+                    >
+
+                        Hoje
+
                     </option>
 
-                    <option value="30dias"
-                        {% if periodo == '30dias' %}selected{% endif %}>
-                        Últimos 30 dias
+                    <option
+                        value="7_dias"
+                        {% if request.args.get('periodo') == '7_dias' %}selected{% endif %}
+                    >
+
+                        7 dias
+
+                    </option>
+
+                    <option
+                        value="mes_passado"
+                        {% if request.args.get('periodo') == 'mes_passado' %}selected{% endif %}
+                    >
+
+                        Mês passado
+
                     </option>
 
                 </select>
+
             </div>
 
 
             <!-- TIPO -->
-            <div class="col-md-2">
-                <label class="form-label">Tipo</label>
 
-                <select name="tipo" class="form-select form-select-sm">
+            <div class="col-md-3">
 
-                    <option value=""
-                        {% if not tipo_filtro %}selected{% endif %}>
-                        Todos
-                    </option>
+                <label class="form-label small fw-semibold text-secondary">
 
-                    <option value="receita"
-                        {% if tipo_filtro == 'receita' %}selected{% endif %}>
+                    Tipo
+
+                </label>
+
+                <select
+                    name="tipo"
+                    class="form-select form-select-sm"
+                >
+
+                    <option value="">Todos</option>
+
+                    <option
+                        value="receita"
+                        {% if request.args.get('tipo') == 'receita' %}selected{% endif %}
+                    >
+
                         Receita
+
                     </option>
 
-                    <option value="despesa"
-                        {% if tipo_filtro == 'despesa' %}selected{% endif %}>
+                    <option
+                        value="despesa"
+                        {% if request.args.get('tipo') == 'despesa' %}selected{% endif %}
+                    >
+
                         Despesa
+
                     </option>
 
                 </select>
+
             </div>
 
 
             <!-- CATEGORIA -->
+
             <div class="col-md-3">
-                <label class="form-label">Categoria</label>
 
-                <select name="categoria" class="form-select form-select-sm">
+                <label class="form-label small fw-semibold text-secondary">
 
-                    <option value=""
-                        {% if not categoria_filtro %}selected{% endif %}>
-                        Todas
-                    </option>
+                    Categoria
+
+                </label>
+
+                <select
+                    name="categoria"
+                    class="form-select form-select-sm"
+                >
+
+                    <option value="">Todas</option>
 
                     {% for cat in categorias %}
-                        <option value="{{ cat.id }}"
-                            {% if categoria_filtro|string == cat.id|string %}selected{% endif %}>
+
+                        <option
+                            value="{{ cat.id }}"
+                            {% if request.args.get('categoria')|int == cat.id %}selected{% endif %}
+                        >
+
                             {{ cat.nome }}
+
                         </option>
+
                     {% endfor %}
 
                 </select>
+
             </div>
 
 
             <!-- STATUS -->
-            <div class="col-md-2">
-                <label class="form-label">Status</label>
 
-                <select name="status" class="form-select form-select-sm">
+            <div class="col-md-3">
 
-                    <option value=""
-                        {% if not status_filtro %}selected{% endif %}>
-                        Todos
-                    </option>
+                <label class="form-label small fw-semibold text-secondary">
 
-                    <option value="pago"
-                        {% if status_filtro|lower == 'pago' %}selected{% endif %}>
+                    Status
+
+                </label>
+
+                <select
+                    name="status"
+                    class="form-select form-select-sm"
+                >
+
+                    <option value="">Todos</option>
+
+                    <option
+                        value="Pago"
+                        {% if request.args.get('status') == 'Pago' %}selected{% endif %}
+                    >
+
                         Pago
+
                     </option>
 
-                    <option value="pendente"
-                        {% if status_filtro|lower == 'pendente' %}selected{% endif %}>
+                    <option
+                        value="Pendente"
+                        {% if request.args.get('status') == 'Pendente' %}selected{% endif %}
+                    >
+
                         Pendente
+
                     </option>
 
                 </select>
+
+            </div>
+
+        </div>
+
+
+        <!-- BOTÕES DE PERÍODO E AÇÕES -->
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+
+            <div class="d-flex gap-1 flex-wrap">
+
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary btn-periodo"
+                    data-val="hoje"
+                >
+
+                    Hoje
+
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary btn-periodo"
+                    data-val="7_dias"
+                >
+
+                    7 dias
+
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary btn-periodo"
+                    data-val="este_mes"
+                >
+
+                    Este mês
+
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary btn-periodo"
+                    data-val="mes_passado"
+                >
+
+                    Mês passado
+
+                </button>
+
             </div>
 
 
-            <!-- BOTÕES -->
-            <div class="col-md-2 d-flex align-items-end gap-2">
+            <div class="d-flex gap-2">
 
-                <button type="submit" class="btn-filter flex-grow-1">
-                    <i class="fas fa-search me-1"></i>
+                <button
+                    type="submit"
+                    class="btn btn-sm btn-dark px-3"
+                >
+
+                    <i class="fa-solid fa-filter me-1"></i>
+
                     Filtrar
+
                 </button>
 
-                <a href="{{ url_for('lancamentos') }}"
-                   class="btn-clear"
-                   title="Limpar filtros">
-                    <i class="fas fa-times"></i>
+                <a
+                    href="{{ url_for('lancamentos') }}"
+                    class="btn btn-sm btn-light border"
+                >
+
+                    Limpar filtros
+
                 </a>
 
             </div>
@@ -497,388 +637,554 @@
         </div>
 
     </form>
-</div>
-
-
-<!-- LISTA DE LANÇAMENTOS -->
-<div class="card-custom table-card">
-
-    <div class="table-header">
-
-        <h3 class="table-title">
-            <i class="fas fa-list me-2"></i>
-            Seus lançamentos
-        </h3>
-
-        <span class="table-count">
-            {{ transacoes|length if transacoes else 0 }}
-            lançamento(s)
-        </span>
-
-    </div>
-
-
-    {% if transacoes %}
-
-        <div class="table-responsive">
-
-            <table class="table">
-
-                <thead>
-                    <tr>
-                        <th>Data</th>
-                        <th>Descrição</th>
-                        <th>Categoria</th>
-                        <th>Tipo</th>
-                        <th>Valor</th>
-                        <th>Status</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-
-
-                <tbody>
-
-                    {% for item in transacoes %}
-
-                        <tr>
-
-                            <!-- DATA -->
-                            <td class="date">
-                                {% if item.data %}
-                                    {{ item.data.strftime('%d/%m/%Y') }}
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-
-
-                            <!-- DESCRIÇÃO -->
-                            <td>
-                                <span class="description">
-                                    {{ item.descricao }}
-                                </span>
-                            </td>
-
-
-                            <!-- CATEGORIA -->
-                            <td>
-
-                                {% if item.categoria %}
-
-                                    <span class="category-badge">
-                                        <i class="fas fa-tag me-1"></i>
-                                        {{ item.categoria }}
-                                    </span>
-
-                                {% else %}
-
-                                    <span class="category-badge">
-                                        Sem Categoria
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <!-- TIPO -->
-                            <td>
-
-                                {% if item.tipo|lower == 'receita' %}
-
-                                    <span class="badge-tipo badge-receita">
-                                        <i class="fas fa-arrow-up me-1"></i>
-                                        Receita
-                                    </span>
-
-                                {% else %}
-
-                                    <span class="badge-tipo badge-despesa">
-                                        <i class="fas fa-arrow-down me-1"></i>
-                                        Despesa
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <!-- VALOR -->
-                            <td>
-
-                                {% if item.tipo|lower == 'receita' %}
-
-                                    <span class="valor-receita">
-                                        + R$ {{ "%.2f"|format(item.valor)|replace('.', ',') }}
-                                    </span>
-
-                                {% else %}
-
-                                    <span class="valor-despesa">
-                                        - R$ {{ "%.2f"|format(item.valor)|replace('.', ',') }}
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <!-- STATUS -->
-                            <td>
-
-                                {% if item.status|lower == 'pago' %}
-
-                                    <span class="badge-status status-pago">
-                                        <i class="fas fa-check-circle me-1"></i>
-                                        Pago
-                                    </span>
-
-                                {% else %}
-
-                                    <span class="badge-status status-pendente">
-                                        <i class="fas fa-clock me-1"></i>
-                                        Pendente
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <!-- AÇÕES -->
-                            <td>
-
-                                <div class="actions">
-
-                                    <a href="{{ url_for('editar_transacao', transacao_id=item.id) }}"
-                                       class="btn-action btn-edit"
-                                       title="Editar">
-
-                                        <i class="fas fa-edit"></i>
-
-                                    </a>
-
-
-                                    <form method="POST"
-                                          action="{{ url_for('excluir_transacao', transacao_id=item.id) }}"
-                                          style="display:inline;"
-                                          onsubmit="return confirm('Deseja realmente excluir este lançamento?');">
-
-                                        <button type="submit"
-                                                class="btn-action btn-delete"
-                                                title="Excluir">
-
-                                            <i class="fas fa-trash"></i>
-
-                                        </button>
-
-                                    </form>
-
-                                </div>
-
-                            </td>
-
-                        </tr>
-
-                    {% endfor %}
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    {% else %}
-
-        <div class="empty-state">
-
-            <i class="fas fa-receipt"></i>
-
-            <h4>Nenhum lançamento encontrado</h4>
-
-            <p>
-                Você ainda não possui lançamentos para os filtros selecionados.
-            </p>
-
-        </div>
-
-    {% endif %}
 
 </div>
 
 
-<!-- NOVO LANÇAMENTO -->
-<div class="card-custom new-card">
+<!-- =========================================================
+     CONTEÚDO PRINCIPAL
+     ========================================================= -->
 
-    <div class="new-card-title">
-        <i class="fas fa-plus-circle me-2"></i>
-        Novo lançamento
-    </div>
+<div class="row g-4">
 
 
-    <form action="{{ url_for('nova_transacao') }}" method="POST">
+    <!-- =====================================================
+         TABELA DE LANÇAMENTOS
+         ===================================================== -->
 
-        <div class="row g-3">
+    <div class="col-lg-8">
+
+        <div class="main-card shadow-sm">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+
+                <div class="d-flex align-items-center gap-2">
+
+                    <h5 class="fw-bold m-0 fs-6">
+
+                        Todos os lançamentos
+
+                    </h5>
+
+                    <span class="badge bg-light text-dark border rounded-pill">
+
+                        {{ transacoes|length if transacoes else 0 }}
+
+                    </span>
+
+                </div>
 
 
-            <!-- TIPO -->
-            <div class="col-md-3">
+                <div class="d-flex gap-2">
 
-                <label class="form-label">
-                    Tipo
-                </label>
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-light border btn-exportar"
+                    >
 
-                <div class="tipo-buttons">
+                        <i class="fa-solid fa-download me-1"></i>
 
-                    <button type="button"
-                            class="tipo-btn receita active"
-                            id="btnReceita"
-                            onclick="selecionarTipo('receita')">
-
-                        <i class="fas fa-arrow-up me-1"></i>
-                        Receita
+                        Exportar
 
                     </button>
 
 
-                    <button type="button"
-                            class="tipo-btn despesa"
-                            id="btnDespesa"
-                            onclick="selecionarTipo('despesa')">
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-dark"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#panelNovoLancamento"
+                    >
 
-                        <i class="fas fa-arrow-down me-1"></i>
-                        Despesa
+                        + Novo lançamento
 
                     </button>
 
                 </div>
 
-                <input type="hidden"
-                       name="tipo"
-                       id="tipo"
-                       value="receita">
-
             </div>
 
 
-            <!-- DESCRIÇÃO -->
-            <div class="col-md-4">
+            <div class="table-responsive">
 
-                <label class="form-label">
-                    Descrição
-                </label>
+                <table class="table table-borderless table-lancamentos m-0">
 
-                <input type="text"
-                       name="descricao"
-                       class="form-control"
-                       placeholder="Ex.: Salário, aluguel..."
-                       required>
+                    <thead>
 
-            </div>
+                        <tr>
 
+                            <th>Data</th>
 
-            <!-- VALOR -->
-            <div class="col-md-2">
+                            <th>Descrição</th>
 
-                <label class="form-label">
-                    Valor
-                </label>
+                            <th>Categoria</th>
 
-                <input type="number"
-                       name="valor"
-                       class="form-control"
-                       step="0.01"
-                       min="0"
-                       placeholder="0,00"
-                       required>
+                            <th>Tipo</th>
 
-            </div>
+                            <th>Valor</th>
+
+                            <th>Status</th>
+
+                            <th class="text-end">Ações</th>
+
+                        </tr>
+
+                    </thead>
 
 
-            <!-- DATA -->
-            <div class="col-md-3">
+                    <tbody>
 
-                <label class="form-label">
-                    Data
-                </label>
+                        {% if transacoes %}
 
-                <input type="date"
-                       name="data"
-                       id="data"
-                       class="form-control"
-                       required>
+                            {% for item in transacoes %}
 
-            </div>
+                                <tr>
 
+                                    <!-- DATA -->
 
-            <!-- CATEGORIA -->
-            <div class="col-md-4">
+                                    <td class="text-secondary">
 
-                <label class="form-label">
-                    Categoria
-                </label>
+                                        {% if item.data %}
 
-                <select name="categoria_id"
-                        class="form-select"
-                        required>
+                                            {% if item.data.strftime %}
 
-                    <option value="" disabled selected>
-                        Selecione uma categoria
-                    </option>
+                                                {{ item.data.strftime('%d/%m/%Y') }}
 
-                    {% for cat in categorias %}
+                                            {% else %}
 
-                        <option value="{{ cat.id }}">
-                            {{ cat.nome }}
-                        </option>
+                                                {{ item.data }}
 
-                    {% endfor %}
+                                            {% endif %}
 
-                </select>
+                                        {% else %}
 
-            </div>
+                                            -
+
+                                        {% endif %}
+
+                                    </td>
 
 
-            <!-- STATUS -->
-            <div class="col-md-3">
+                                    <!-- DESCRIÇÃO -->
 
-                <label class="form-label">
-                    Status
-                </label>
+                                    <td class="fw-semibold text-dark">
 
-                <select name="status"
-                        class="form-select">
+                                        {{ item.descricao or 'Sem descrição' }}
 
-                    <option value="pago">
-                        Pago
-                    </option>
-
-                    <option value="pendente">
-                        Pendente
-                    </option>
-
-                </select>
-
-            </div>
+                                    </td>
 
 
-            <!-- BOTÃO -->
-            <div class="col-md-5 d-flex align-items-end">
+                                    <!-- CATEGORIA -->
 
-                <button type="submit"
-                        class="btn-save">
+                                    <td>
 
-                    <i class="fas fa-save me-2"></i>
-                    Salvar lançamento
+                                        {% set cat_slug = (
 
-                </button>
+                                            item.categoria
+
+                                            |lower
+                                            |replace('á','a')
+                                            |replace('à','a')
+                                            |replace('ã','a')
+                                            |replace('â','a')
+                                            |replace('é','e')
+                                            |replace('ê','e')
+                                            |replace('í','i')
+                                            |replace('ó','o')
+                                            |replace('ô','o')
+                                            |replace('õ','o')
+                                            |replace('ú','u')
+                                            |replace('ç','c')
+                                            |replace(' ','-')
+
+                                        ) if item.categoria else 'outros' %}
+
+
+                                        <span class="badge-cat badge-{{ cat_slug }}">
+
+                                            <i class="fa-solid fa-tag"></i>
+
+                                            {{ item.categoria if item.categoria else 'Sem Categoria' }}
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <!-- TIPO -->
+
+                                    <td>
+
+                                        {% if item.tipo == 'receita' %}
+
+                                            <span class="badge-tipo-receita">
+
+                                                Receita
+
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="badge-tipo-despesa">
+
+                                                Despesa
+
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <!-- VALOR -->
+
+                                    <td class="fw-bold {% if item.tipo == 'receita' %}text-success{% else %}text-danger{% endif %}">
+
+                                        {% if item.tipo == 'receita' %}
+
+                                            +
+
+                                        {% else %}
+
+                                            -
+
+                                        {% endif %}
+
+                                        R$ {{ "%.2f"|format(item.valor|float) }}
+
+                                    </td>
+
+
+                                    <!-- STATUS -->
+
+                                    <td>
+
+                                        <span class="{% if item.status == 'Pago' %}badge-pago{% else %}badge-pendente{% endif %}">
+
+                                            {{ item.status }}
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <!-- AÇÕES -->
+
+                                    <td class="text-end">
+
+                                        <a
+                                            href="{{ url_for('editar_transacao', transacao_id=item.id) }}"
+                                            class="btn-acao btn-editar"
+                                            title="Editar lançamento"
+                                        >
+
+                                            <i class="fa-regular fa-pen-to-square"></i>
+
+                                        </a>
+
+
+                                        <form
+                                            action="{{ url_for('excluir_transacao', transacao_id=item.id) }}"
+                                            method="POST"
+                                            class="d-inline"
+                                            onsubmit="return confirm('Tem certeza que deseja excluir este lançamento?');"
+                                        >
+
+                                            <button
+                                                type="submit"
+                                                class="btn-acao btn-excluir"
+                                                title="Excluir lançamento"
+                                            >
+
+                                                <i class="fa-regular fa-trash-can"></i>
+
+                                            </button>
+
+                                        </form>
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        {% else %}
+
+                            <tr>
+
+                                <td colspan="7" class="text-center py-4 text-muted">
+
+                                    <i class="fa-regular fa-folder-open mb-2 fs-4 d-block"></i>
+
+                                    Nenhum lançamento encontrado.
+
+                                </td>
+
+                            </tr>
+
+                        {% endif %}
+
+                    </tbody>
+
+                </table>
 
             </div>
 
         </div>
 
-    </form>
+    </div>
+
+
+    <!-- =====================================================
+         PAINEL LATERAL - NOVO LANÇAMENTO
+         ===================================================== -->
+
+    <div
+        class="col-lg-4 collapse show"
+        id="panelNovoLancamento"
+    >
+
+        <div class="side-form-card shadow-sm">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+
+                <h5 class="fw-bold m-0 fs-6">
+
+                    Novo lançamento
+
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#panelNovoLancamento"
+                    aria-label="Fechar"
+                ></button>
+
+            </div>
+
+
+            <!-- FORMULÁRIO -->
+
+            <form
+                action="{{ url_for('nova_transacao') }}"
+                method="POST"
+            >
+
+                <!-- TIPO -->
+
+                <div class="mb-3">
+
+                    <label class="form-label small fw-semibold text-secondary">
+
+                        Tipo
+
+                    </label>
+
+                    <div class="d-flex gap-2">
+
+                        <input
+                            type="radio"
+                            class="btn-check"
+                            name="tipo"
+                            id="tipoReceita"
+                            value="receita"
+                            checked
+                        >
+
+                        <label
+                            class="btn-type-selector active-receita"
+                            for="tipoReceita"
+                        >
+
+                            <i class="fa-solid fa-arrow-up"></i>
+
+                            Receita
+
+                        </label>
+
+
+                        <input
+                            type="radio"
+                            class="btn-check"
+                            name="tipo"
+                            id="tipoDespesa"
+                            value="despesa"
+                        >
+
+                        <label
+                            class="btn-type-selector"
+                            for="tipoDespesa"
+                        >
+
+                            <i class="fa-solid fa-arrow-down"></i>
+
+                            Despesa
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+
+                <!-- DESCRIÇÃO -->
+
+                <div class="mb-3">
+
+                    <label class="form-label small fw-semibold text-secondary">
+
+                        Descrição
+
+                    </label>
+
+                    <input
+                        type="text"
+                        name="descricao"
+                        class="form-control form-control-sm"
+                        placeholder="Ex: Conta de luz"
+                        maxlength="255"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- VALOR -->
+
+                <div class="mb-3">
+
+                    <label class="form-label small fw-semibold text-secondary">
+
+                        Valor
+
+                    </label>
+
+                    <div class="input-group input-group-sm">
+
+                        <span class="input-group-text">R$</span>
+
+                        <input
+                            type="number"
+                            step="0.01"
+                            min="0.01"
+                            name="valor"
+                            class="form-control"
+                            placeholder="0,00"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- CATEGORIA -->
+
+                <div class="mb-3">
+
+                    <label class="form-label small fw-semibold text-secondary">
+
+                        Categoria
+
+                    </label>
+
+                    <select
+                        name="categoria_id"
+                        class="form-select form-select-sm"
+                        required
+                    >
+
+                        <option value="" disabled selected>
+
+                            Selecione uma categoria
+
+                        </option>
+
+                        {% for cat in categorias %}
+
+                            <option value="{{ cat.id }}">
+
+                                {{ cat.nome }}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- DATA -->
+
+                <div class="mb-3">
+
+                    <label class="form-label small fw-semibold text-secondary">
+
+                        Data
+
+                    </label>
+
+                    <input
+                        type="date"
+                        name="data"
+                        id="formDate"
+                        class="form-control form-control-sm"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- STATUS -->
+
+                <div class="mb-4">
+
+                    <label class="form-label small fw-semibold text-secondary">
+
+                        Status
+
+                    </label>
+
+                    <select
+                        name="status"
+                        class="form-select form-select-sm"
+                        required
+                    >
+
+                        <option value="Pago" selected>
+
+                            Pago
+
+                        </option>
+
+                        <option value="Pendente">
+
+                            Pendente
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="btn btn-dark btn-sm w-100 fw-semibold"
+                >
+
+                    Salvar Lançamento
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
 
 </div>
 
@@ -889,68 +1195,83 @@
 
 <script>
 
-    // =========================================================
-    // DATA ATUAL
-    // =========================================================
+    document.addEventListener('DOMContentLoaded', () => {
 
-    document.addEventListener("DOMContentLoaded", function () {
+        // Preenche por padrão o campo de data com o dia de hoje
 
-        const campoData = document.getElementById("data");
+        const today = new Date().toISOString().split('T')[0];
 
-        if (campoData && !campoData.value) {
+        const formDate = document.getElementById('formDate');
 
-            const hoje = new Date();
+        const headerDate = document.getElementById('headerDate');
 
-            const ano = hoje.getFullYear();
+        if (formDate && !formDate.value) formDate.value = today;
 
-            const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+        if (headerDate && !headerDate.value) headerDate.value = today;
 
-            const dia = String(hoje.getDate()).padStart(2, "0");
 
-            campoData.value = `${ano}-${mes}-${dia}`;
+        // Alterna o estilo dinâmico dos seletores de tipo (Receita / Despesa)
+
+        const radioTipoReceita = document.getElementById('tipoReceita');
+
+        const radioTipoDespesa = document.getElementById('tipoDespesa');
+
+        const labelReceita = document.querySelector('label[for="tipoReceita"]');
+
+        const labelDespesa = document.querySelector('label[for="tipoDespesa"]');
+
+
+        function updateTypeSelectors() {
+
+            if (radioTipoReceita.checked) {
+
+                labelReceita.classList.add('active-receita');
+
+                labelDespesa.classList.remove('active-despesa');
+
+            } else {
+
+                labelReceita.classList.remove('active-receita');
+
+                labelDespesa.classList.add('active-despesa');
+
+            }
 
         }
+
+
+        if (radioTipoReceita && radioTipoDespesa) {
+
+            radioTipoReceita.addEventListener('change', updateTypeSelectors);
+
+            radioTipoDespesa.addEventListener('change', updateTypeSelectors);
+
+        }
+
+
+        // Botões de atalho rápido para período nos filtros
+
+        document.querySelectorAll('.btn-periodo').forEach(btn => {
+
+            btn.addEventListener('click', () => {
+
+                const val = btn.getAttribute('data-val');
+
+                const selectPeriodo = document.getElementById('selectPeriodo');
+
+                if (selectPeriodo) {
+
+                    selectPeriodo.value = val;
+
+                    document.getElementById('filterForm').submit();
+
+                }
+
+            });
+
+        });
 
     });
-
-
-    // =========================================================
-    // SELECIONAR TIPO
-    // =========================================================
-
-    function selecionarTipo(tipo) {
-
-        const campoTipo = document.getElementById("tipo");
-
-        const btnReceita = document.getElementById("btnReceita");
-
-        const btnDespesa = document.getElementById("btnDespesa");
-
-
-        if (!campoTipo || !btnReceita || !btnDespesa) {
-            return;
-        }
-
-
-        campoTipo.value = tipo;
-
-
-        btnReceita.classList.remove("active");
-
-        btnDespesa.classList.remove("active");
-
-
-        if (tipo === "receita") {
-
-            btnReceita.classList.add("active");
-
-        } else {
-
-            btnDespesa.classList.add("active");
-
-        }
-
-    }
 
 </script>
 
