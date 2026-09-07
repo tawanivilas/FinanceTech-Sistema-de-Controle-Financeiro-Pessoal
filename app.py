@@ -2,13 +2,17 @@ import os
 import re
 import unicodedata
 
+from dotenv import load_dotenv
+load_dotenv()
+
 from flask import (
     Flask,
     render_template,
     request,
     redirect,
     url_for,
-    session
+    session,
+    flash
 )
 
 from werkzeug.security import (
@@ -35,15 +39,11 @@ app.secret_key = os.environ.get(
 )
 
 
-# =========================================================
-# CONFIGURAÇÃO DA SESSÃO
-# =========================================================
-
 IS_PRODUCTION = (
     os.environ.get("FLASK_ENV", "").lower() == "production"
-    or
-    os.environ.get("SESSION_COOKIE_SECURE", "").lower() == "true"
+    or os.environ.get("SESSION_COOKIE_SECURE", "").lower() == "true"
 )
+
 
 if IS_PRODUCTION:
     app.config["SESSION_COOKIE_SAMESITE"] = "None"
@@ -54,7 +54,7 @@ else:
 
 
 # =========================================================
-# CONEXÃO COM O BANCO
+# CONEXÃO COM O BANCO DE DADOS
 # =========================================================
 
 def conectar_banco():
@@ -94,7 +94,7 @@ def conectar_banco():
 
 
 # =========================================================
-# FECHAR BANCO
+# FECHAR CONEXÃO
 # =========================================================
 
 def fechar_banco(cursor=None, conexao=None):
@@ -113,7 +113,7 @@ def fechar_banco(cursor=None, conexao=None):
 
 
 # =========================================================
-# SLUG PARA CATEGORIAS
+# SLUGIFY
 # =========================================================
 
 def slugify(text):
@@ -147,7 +147,7 @@ def slugify(text):
 
 
 # =========================================================
-# CONVERTER VALOR BRASILEIRO
+# CONVERTER VALOR
 # =========================================================
 
 def converter_valor(valor_str):
@@ -168,7 +168,6 @@ def converter_valor(valor_str):
             .replace(" ", "")
         )
 
-        # 1.500,50 -> 1500.50
         if "," in valor_str:
 
             valor_str = (
@@ -181,7 +180,10 @@ def converter_valor(valor_str):
 
         return valor
 
-    except (ValueError, TypeError):
+    except (
+        ValueError,
+        TypeError
+    ):
 
         return None
 
@@ -190,108 +192,158 @@ def converter_valor(valor_str):
 # LOGIN
 # =========================================================
 
-@app.route(
-    "/",
-    methods=["GET", "POST"],
-    strict_slashes=False
-)
-@app.route(
-    "/login",
-    methods=["GET", "POST"],
-    strict_slashes=False
-)
+@app.route("/")
+@app.route("/login")
 def login():
 
-    if request.method == "POST":
-
-        email = request.form.get(
-            "email",
-            ""
-        ).strip().lower()
-
-        senha = request.form.get(
-            "senha",
-            ""
+    if "usuario_id" in session:
+        return redirect(
+            url_for("dashboard")
         )
-
-        if not email or not senha:
-            return "Informe e-mail e senha."
-
-        conexao = None
-        cursor = None
-
-        try:
-
-            conexao = conectar_banco()
-
-            cursor = conexao.cursor(
-                dictionary=True
-            )
-
-            cursor.execute(
-                """
-                SELECT
-                    id,
-                    nome,
-                    email,
-                    senha
-                FROM usuarios
-                WHERE email = %s
-                """,
-                (email,)
-            )
-
-            usuario = cursor.fetchone()
-
-            if not usuario:
-                return "E-mail ou senha incorretos!"
-
-            if not check_password_hash(
-                usuario["senha"],
-                senha
-            ):
-                return "E-mail ou senha incorretos!"
-
-            session.clear()
-
-            session["usuario_id"] = usuario["id"]
-            session["usuario_nome"] = usuario["nome"]
-
-            return redirect(
-                url_for("dashboard")
-            )
-
-        except Error:
-
-            app.logger.exception(
-                "Erro no login"
-            )
-
-            return (
-                "Erro ao realizar login. "
-                "Verifique a conexão com o banco."
-            ), 500
-
-        except Exception:
-
-            app.logger.exception(
-                "Erro inesperado no login"
-            )
-
-            return (
-                "Ocorreu um erro inesperado ao realizar login."
-            ), 500
-
-        finally:
-
-            fechar_banco(
-                cursor,
-                conexao
-            )
 
     return render_template(
         "login.html"
     )
+
+
+@app.route("/login", methods=["POST"])
+def realizar_login():
+
+    email = request.form.get(
+        "email",
+        ""
+    ).strip().lower()
+
+    senha = request.form.get(
+        "senha",
+        ""
+    )
+
+    if not email or not senha:
+
+        flash(
+            "Preencha e-mail e senha.",
+            "warning"
+        )
+
+        return redirect(
+            url_for("login")
+        )
+
+    conexao = None
+    cursor = None
+
+    try:
+
+        conexao = conectar_banco()
+
+        cursor = conexao.cursor(
+            dictionary=True
+        )
+
+        cursor.execute(
+            """
+            SELECT
+                id,
+                nome,
+                email,
+                senha
+            FROM usuarios
+            WHERE LOWER(email) = LOWER(%s)
+            LIMIT 1
+            """,
+            (email,)
+        )
+
+        usuario = cursor.fetchone()
+
+        if not usuario:
+
+            flash(
+                "E-mail ou senha incorretos!",
+                "danger"
+            )
+
+            return redirect(
+                url_for("login")
+            )
+
+        senha_banco = usuario["senha"]
+
+        senha_valida = False
+
+        try:
+
+            senha_valida = check_password_hash(
+                senha_banco,
+                senha
+            )
+
+        except Exception:
+
+            senha_valida = (
+                senha_banco == senha
+            )
+
+        if not senha_valida:
+
+            flash(
+                "E-mail ou senha incorretos!",
+                "danger"
+            )
+
+            return redirect(
+                url_for("login")
+            )
+
+        session.clear()
+
+        session["usuario_id"] = usuario["id"]
+
+        session["usuario_nome"] = (
+            usuario["nome"]
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    except Error:
+
+        app.logger.exception(
+            "Erro ao realizar login"
+        )
+
+        flash(
+            "Erro ao conectar ao banco de dados.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("login")
+        )
+
+    except Exception:
+
+        app.logger.exception(
+            "Erro inesperado no login"
+        )
+
+        flash(
+            "Ocorreu um erro inesperado.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("login")
+        )
+
+    finally:
+
+        fechar_banco(
+            cursor,
+            conexao
+        )
 
 
 # =========================================================
@@ -304,128 +356,191 @@ def login():
 )
 def cadastro():
 
-    if request.method == "POST":
+    if request.method == "GET":
 
-        nome = request.form.get(
-            "nome",
-            ""
-        ).strip()
-
-        email = request.form.get(
-            "email",
-            ""
-        ).strip().lower()
-
-        senha = request.form.get(
-            "senha",
-            ""
+        return render_template(
+            "cadastro.html"
         )
 
-        confirmar_senha = request.form.get(
-            "confirmar_senha",
-            ""
+    nome = request.form.get(
+        "nome",
+        ""
+    ).strip()
+
+    email = request.form.get(
+        "email",
+        ""
+    ).strip().lower()
+
+    senha = request.form.get(
+        "senha",
+        ""
+    )
+
+    confirmar_senha = request.form.get(
+        "confirmar_senha",
+        ""
+    )
+
+    if not nome:
+
+        flash(
+            "Informe seu nome.",
+            "warning"
         )
 
-        if not nome or not email or not senha:
-            return "Preencha todos os campos."
+        return redirect(
+            url_for("cadastro")
+        )
 
-        if senha != confirmar_senha:
-            return "As senhas não são iguais!"
+    if not email:
 
-        conexao = None
-        cursor = None
+        flash(
+            "Informe seu e-mail.",
+            "warning"
+        )
 
-        try:
+        return redirect(
+            url_for("cadastro")
+        )
 
-            conexao = conectar_banco()
+    if not senha:
 
-            cursor = conexao.cursor(
-                dictionary=True
+        flash(
+            "Informe uma senha.",
+            "warning"
+        )
+
+        return redirect(
+            url_for("cadastro")
+        )
+
+    if senha != confirmar_senha:
+
+        flash(
+            "As senhas não são iguais!",
+            "warning"
+        )
+
+        return redirect(
+            url_for("cadastro")
+        )
+
+    senha_hash = generate_password_hash(
+        senha
+    )
+
+    conexao = None
+    cursor = None
+
+    try:
+
+        conexao = conectar_banco()
+
+        cursor = conexao.cursor(
+            dictionary=True
+        )
+
+        cursor.execute(
+            """
+            SELECT id
+            FROM usuarios
+            WHERE LOWER(email) = LOWER(%s)
+            LIMIT 1
+            """,
+            (email,)
+        )
+
+        usuario_existente = (
+            cursor.fetchone()
+        )
+
+        if usuario_existente:
+
+            flash(
+                "Este e-mail já está cadastrado.",
+                "warning"
             )
-
-            cursor.execute(
-                """
-                SELECT id
-                FROM usuarios
-                WHERE email = %s
-                """,
-                (email,)
-            )
-
-            usuario_existente = cursor.fetchone()
-
-            if usuario_existente:
-                return "Este e-mail já está cadastrado."
-
-            senha_hash = generate_password_hash(
-                senha
-            )
-
-            cursor.execute(
-                """
-                INSERT INTO usuarios
-                (
-                    nome,
-                    email,
-                    senha
-                )
-                VALUES
-                (
-                    %s,
-                    %s,
-                    %s
-                )
-                """,
-                (
-                    nome,
-                    email,
-                    senha_hash
-                )
-            )
-
-            conexao.commit()
 
             return redirect(
-                url_for("login")
+                url_for("cadastro")
             )
 
-        except Error:
-
-            if conexao:
-                conexao.rollback()
-
-            app.logger.exception(
-                "Erro no cadastro"
+        cursor.execute(
+            """
+            INSERT INTO usuarios
+            (
+                nome,
+                email,
+                senha
             )
-
-            return (
-                "Erro ao realizar cadastro. "
-                "Verifique a conexão com o banco."
-            ), 500
-
-        except Exception:
-
-            if conexao:
-                conexao.rollback()
-
-            app.logger.exception(
-                "Erro inesperado no cadastro"
+            VALUES
+            (
+                %s,
+                %s,
+                %s
             )
-
-            return (
-                "Ocorreu um erro inesperado no cadastro."
-            ), 500
-
-        finally:
-
-            fechar_banco(
-                cursor,
-                conexao
+            """,
+            (
+                nome,
+                email,
+                senha_hash
             )
+        )
 
-    return render_template(
-        "cadastro.html"
-    )
+        conexao.commit()
+
+        flash(
+            "Cadastro realizado com sucesso! Faça login.",
+            "success"
+        )
+
+        return redirect(
+            url_for("login")
+        )
+
+    except Error:
+
+        if conexao:
+            conexao.rollback()
+
+        app.logger.exception(
+            "Erro ao cadastrar usuário"
+        )
+
+        flash(
+            "Erro ao realizar cadastro.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("cadastro")
+        )
+
+    except Exception:
+
+        if conexao:
+            conexao.rollback()
+
+        app.logger.exception(
+            "Erro inesperado no cadastro"
+        )
+
+        flash(
+            "Ocorreu um erro inesperado.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("cadastro")
+        )
+
+    finally:
+
+        fechar_banco(
+            cursor,
+            conexao
+        )
 
 
 # =========================================================
@@ -457,76 +572,16 @@ def dashboard():
 
     usuario_id = session["usuario_id"]
 
-    mes_atual = request.args.get(
-        "mes"
+    hoje = date.today()
+
+    primeiro_dia = hoje.replace(
+        day=1
     )
 
-    if not mes_atual:
-
-        mes_atual = date.today().strftime(
-            "%Y-%m"
-        )
-
-    try:
-
-        ano, mes = map(
-            int,
-            mes_atual.split("-")
-        )
-
-        primeiro_dia = date(
-            ano,
-            mes,
-            1
-        )
-
-        ultimo_dia = (
-            primeiro_dia
-            + relativedelta(months=1)
-            - timedelta(days=1)
-        )
-
-    except (ValueError, TypeError):
-
-        primeiro_dia = date.today().replace(
-            day=1
-        )
-
-        ultimo_dia = (
-            primeiro_dia
-            + relativedelta(months=1)
-            - timedelta(days=1)
-        )
-
-        mes_atual = primeiro_dia.strftime(
-            "%Y-%m"
-        )
-
-    meses = []
-
-    nomes_meses = [
-        "Janeiro",
-        "Fevereiro",
-        "Março",
-        "Abril",
-        "Maio",
-        "Junho",
-        "Julho",
-        "Agosto",
-        "Setembro",
-        "Outubro",
-        "Novembro",
-        "Dezembro"
-    ]
-
-    ano_atual = date.today().year
-
-    for numero_mes in range(1, 13):
-
-        meses.append({
-            "valor": f"{ano_atual}-{numero_mes:02d}",
-            "nome": nomes_meses[numero_mes - 1]
-        })
+    ultimo_dia = (
+        primeiro_dia
+        + relativedelta(months=1)
+    )
 
     conexao = None
     cursor = None
@@ -544,20 +599,18 @@ def dashboard():
             SELECT
                 t.id,
                 t.descricao,
-                t.valor,
                 t.tipo,
+                t.valor,
                 t.data,
-                t.pago,
-                t.categoria_id,
-                c.nome AS categoria_nome
+                t.status,
+                c.nome AS categoria
             FROM transacoes t
             LEFT JOIN categorias c
                 ON t.categoria_id = c.id
             WHERE t.usuario_id = %s
-              AND t.data BETWEEN %s AND %s
-            ORDER BY
-                t.data DESC,
-                t.id DESC
+              AND t.data >= %s
+              AND t.data < %s
+            ORDER BY t.data DESC, t.id DESC
             """,
             (
                 usuario_id,
@@ -568,104 +621,90 @@ def dashboard():
 
         transacoes = cursor.fetchall()
 
-        total_receitas = 0
-        total_despesas = 0
+        receitas = 0
+        despesas = 0
 
-        despesas_cat_mes = {}
-
-        for item in transacoes:
-
-            item["categoria_nome"] = (
-                item["categoria_nome"]
-                or
-                "Sem categoria"
-            )
-
-            item["categoria_slug"] = slugify(
-                item["categoria_nome"]
-            )
-
-            item["status"] = (
-                "Pago"
-                if item["pago"]
-                else
-                "Pendente"
-            )
+        for transacao in transacoes:
 
             valor = float(
-                item["valor"] or 0
+                transacao["valor"] or 0
             )
 
-            if item["tipo"] == "receita":
+            tipo = str(
+                transacao["tipo"] or ""
+            ).lower()
 
-                total_receitas += valor
+            if tipo in [
+                "receita",
+                "entrada",
+                "income"
+            ]:
+
+                receitas += valor
 
             else:
 
-                total_despesas += valor
+                despesas += valor
 
-                categoria = item[
-                    "categoria_nome"
-                ]
-
-                despesas_cat_mes[
-                    categoria
-                ] = (
-                    despesas_cat_mes.get(
-                        categoria,
-                        0
-                    )
-                    + valor
-                )
-
-        saldo_mes = (
-            total_receitas
-            -
-            total_despesas
-        )
+        saldo = receitas - despesas
 
         cursor.execute(
             """
             SELECT
-                id,
-                nome,
-                tipo,
-                subtipo_despesa
-            FROM categorias
-            WHERE usuario_id IS NULL
-               OR usuario_id = %s
-            ORDER BY nome
+                c.nome AS categoria,
+                SUM(t.valor) AS total
+            FROM transacoes t
+            LEFT JOIN categorias c
+                ON t.categoria_id = c.id
+            WHERE t.usuario_id = %s
+              AND t.tipo IN (
+                  'despesa',
+                  'saida'
+              )
+              AND t.data >= %s
+              AND t.data < %s
+            GROUP BY c.nome
+            ORDER BY total DESC
             """,
-            (usuario_id,)
+            (
+                usuario_id,
+                primeiro_dia,
+                ultimo_dia
+            )
         )
 
-        categorias = cursor.fetchall()
+        despesas_categoria = (
+            cursor.fetchall()
+        )
 
         return render_template(
             "dashboard.html",
-            usuario=session.get(
-                "usuario_nome"
-            ),
-            mes_atual=mes_atual,
-            meses=meses,
             transacoes=transacoes,
-            total_receitas=total_receitas,
-            total_despesas=total_despesas,
-            saldo_mes=saldo_mes,
-            despesas_cat_mes=despesas_cat_mes,
-            categorias=categorias
+            receitas=receitas,
+            despesas=despesas,
+            saldo=saldo,
+            despesas_categoria=despesas_categoria
         )
 
     except Error:
 
         app.logger.exception(
-            "Erro no dashboard"
+            "Erro ao carregar dashboard"
         )
 
-        return (
-            "Erro ao carregar o dashboard. "
-            "Verifique a conexão com o banco."
-        ), 500
+        flash(
+            "Erro ao carregar o dashboard.",
+            "danger"
+        )
+
+        return render_template(
+            "dashboard.html",
+            transacoes=[],
+            receitas=0,
+            despesas=0,
+            saldo=0,
+            despesas_categoria=[]
+        )
 
     except Exception:
 
@@ -673,9 +712,19 @@ def dashboard():
             "Erro inesperado no dashboard"
         )
 
-        return (
-            "Ocorreu um erro inesperado ao carregar o dashboard."
-        ), 500
+        flash(
+            "Erro ao carregar o dashboard.",
+            "danger"
+        )
+
+        return render_template(
+            "dashboard.html",
+            transacoes=[],
+            receitas=0,
+            despesas=0,
+            saldo=0,
+            despesas_categoria=[]
+        )
 
     finally:
 
@@ -702,25 +751,23 @@ def lancamentos():
 
     periodo = request.args.get(
         "periodo",
-        "este_mes"
+        "todos"
     )
 
-    tipo = request.args.get(
+    tipo_filtro = request.args.get(
         "tipo",
         ""
     )
 
-    categoria_id = request.args.get(
-        "categoria_id",
+    categoria_filtro = request.args.get(
+        "categoria",
         ""
     )
 
-    status = request.args.get(
+    status_filtro = request.args.get(
         "status",
         ""
     )
-
-    hoje = date.today()
 
     conexao = None
     cursor = None
@@ -733,16 +780,16 @@ def lancamentos():
             dictionary=True
         )
 
-        query = """
+        sql = """
             SELECT
                 t.id,
                 t.descricao,
-                t.valor,
                 t.tipo,
+                t.valor,
                 t.data,
-                t.pago,
+                t.status,
                 t.categoria_id,
-                c.nome AS categoria_nome
+                c.nome AS categoria
             FROM transacoes t
             LEFT JOIN categorias c
                 ON t.categoria_id = c.id
@@ -753,202 +800,109 @@ def lancamentos():
             usuario_id
         ]
 
-        # -------------------------------------------------
-        # FILTRO DE PERÍODO
-        # -------------------------------------------------
+        hoje = date.today()
 
-        if periodo == "hoje":
+        if periodo == "mes":
 
-            query += """
-                AND t.data = %s
-            """
-
-            parametros.append(
-                hoje
-            )
-
-        elif periodo == "7_dias":
-
-            data_inicio = (
-                hoje
-                -
-                timedelta(days=6)
-            )
-
-            query += """
-                AND t.data BETWEEN %s AND %s
-            """
-
-            parametros.extend([
-                data_inicio,
-                hoje
-            ])
-
-        elif periodo == "mes_passado":
-
-            primeiro_mes = (
-                hoje.replace(day=1)
-                -
-                relativedelta(months=1)
-            )
-
-            ultimo_mes = (
-                hoje.replace(day=1)
-                -
-                timedelta(days=1)
-            )
-
-            query += """
-                AND t.data BETWEEN %s AND %s
-            """
-
-            parametros.extend([
-                primeiro_mes,
-                ultimo_mes
-            ])
-
-        else:
-
-            primeiro_mes = hoje.replace(
+            primeiro_dia = hoje.replace(
                 day=1
             )
 
-            ultimo_mes = (
-                primeiro_mes
-                +
-                relativedelta(months=1)
-                -
-                timedelta(days=1)
+            proximo_mes = (
+                primeiro_dia
+                + relativedelta(months=1)
             )
 
-            query += """
-                AND t.data BETWEEN %s AND %s
+            sql += """
+                AND t.data >= %s
+                AND t.data < %s
             """
 
             parametros.extend([
-                primeiro_mes,
-                ultimo_mes
+                primeiro_dia,
+                proximo_mes
             ])
 
-        # -------------------------------------------------
-        # FILTRO TIPO
-        # -------------------------------------------------
+        elif periodo == "7dias":
 
-        if tipo in (
-            "receita",
-            "despesa"
-        ):
+            data_inicio = hoje - timedelta(
+                days=7
+            )
 
-            query += """
+            sql += """
+                AND t.data >= %s
+            """
+
+            parametros.append(
+                data_inicio
+            )
+
+        elif periodo == "30dias":
+
+            data_inicio = hoje - timedelta(
+                days=30
+            )
+
+            sql += """
+                AND t.data >= %s
+            """
+
+            parametros.append(
+                data_inicio
+            )
+
+        if tipo_filtro:
+
+            sql += """
                 AND t.tipo = %s
             """
 
             parametros.append(
-                tipo
+                tipo_filtro
             )
 
-        # -------------------------------------------------
-        # FILTRO CATEGORIA
-        # -------------------------------------------------
+        if categoria_filtro:
 
-        if categoria_id:
-
-            try:
-
-                categoria_id_int = int(
-                    categoria_id
-                )
-
-                query += """
-                    AND t.categoria_id = %s
-                """
-
-                parametros.append(
-                    categoria_id_int
-                )
-
-            except ValueError:
-
-                pass
-
-        # -------------------------------------------------
-        # FILTRO STATUS
-        # -------------------------------------------------
-
-        if status == "Pago":
-
-            query += """
-                AND t.pago = 1
+            sql += """
+                AND t.categoria_id = %s
             """
 
-        elif status == "Pendente":
+            parametros.append(
+                categoria_filtro
+            )
 
-            query += """
-                AND (
-                    t.pago = 0
-                    OR
-                    t.pago IS NULL
-                )
+        if status_filtro:
+
+            sql += """
+                AND t.status = %s
             """
 
-        # -------------------------------------------------
-        # ORDEM
-        # -------------------------------------------------
+            parametros.append(
+                status_filtro
+            )
 
-        query += """
+        sql += """
             ORDER BY
                 t.data DESC,
                 t.id DESC
         """
 
         cursor.execute(
-            query,
+            sql,
             tuple(parametros)
         )
 
-        lancamentos_lista = cursor.fetchall()
-
-        # -------------------------------------------------
-        # PREPARAR DADOS
-        # -------------------------------------------------
-
-        for item in lancamentos_lista:
-
-            categoria_nome = (
-                item["categoria_nome"]
-                or
-                "Sem Categoria"
-            )
-
-            item["categoria_nome"] = (
-                categoria_nome
-            )
-
-            item["categoria_slug"] = slugify(
-                categoria_nome
-            )
-
-            item["status"] = (
-                "Pago"
-                if item["pago"]
-                else
-                "Pendente"
-            )
-
-        # -------------------------------------------------
-        # CATEGORIAS
-        # -------------------------------------------------
+        transacoes = cursor.fetchall()
 
         cursor.execute(
             """
             SELECT
                 id,
-                nome,
-                tipo,
-                subtipo_despesa
+                nome
             FROM categorias
-            WHERE usuario_id IS NULL
-               OR usuario_id = %s
+            WHERE
+                usuario_id IS NULL
+                OR usuario_id = %s
             ORDER BY nome
             """,
             (usuario_id,)
@@ -958,8 +912,12 @@ def lancamentos():
 
         return render_template(
             "lancamentos.html",
-            lancamentos=lancamentos_lista,
-            categorias=categorias
+            transacoes=transacoes,
+            categorias=categorias,
+            periodo=periodo,
+            tipo_filtro=tipo_filtro,
+            categoria_filtro=categoria_filtro,
+            status_filtro=status_filtro
         )
 
     except Error:
@@ -968,20 +926,41 @@ def lancamentos():
             "Erro ao carregar lançamentos"
         )
 
-        return (
-            "Erro ao carregar lançamentos. "
-            "Verifique a conexão com o banco."
-        ), 500
+        flash(
+            "Erro ao carregar os lançamentos.",
+            "danger"
+        )
+
+        return render_template(
+            "lancamentos.html",
+            transacoes=[],
+            categorias=[],
+            periodo=periodo,
+            tipo_filtro=tipo_filtro,
+            categoria_filtro=categoria_filtro,
+            status_filtro=status_filtro
+        )
 
     except Exception:
 
         app.logger.exception(
-            "Erro inesperado ao carregar lançamentos"
+            "Erro inesperado nos lançamentos"
         )
 
-        return (
-            "Ocorreu um erro inesperado ao carregar os lançamentos."
-        ), 500
+        flash(
+            "Erro ao carregar os lançamentos.",
+            "danger"
+        )
+
+        return render_template(
+            "lancamentos.html",
+            transacoes=[],
+            categorias=[],
+            periodo=periodo,
+            tipo_filtro=tipo_filtro,
+            categoria_filtro=categoria_filtro,
+            status_filtro=status_filtro
+        )
 
     finally:
 
@@ -997,11 +976,11 @@ def lancamentos():
 
 @app.route(
     "/nova-transacao",
-    methods=["POST"]
+    methods=["GET", "POST"]
 )
 @app.route(
     "/novo-lancamento",
-    methods=["POST"]
+    methods=["GET", "POST"]
 )
 def nova_transacao():
 
@@ -1013,23 +992,70 @@ def nova_transacao():
 
     usuario_id = session["usuario_id"]
 
-    tipo = request.form.get(
-        "tipo",
-        ""
-    ).strip().lower()
+    if request.method == "GET":
+
+        conexao = None
+        cursor = None
+
+        try:
+
+            conexao = conectar_banco()
+
+            cursor = conexao.cursor(
+                dictionary=True
+            )
+
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    nome
+                FROM categorias
+                WHERE
+                    usuario_id IS NULL
+                    OR usuario_id = %s
+                ORDER BY nome
+                """,
+                (usuario_id,)
+            )
+
+            categorias = cursor.fetchall()
+
+            return render_template(
+                "nova_transacao.html",
+                categorias=categorias
+            )
+
+        except Exception:
+
+            app.logger.exception(
+                "Erro ao carregar formulário"
+            )
+
+            return render_template(
+                "nova_transacao.html",
+                categorias=[]
+            )
+
+        finally:
+
+            fechar_banco(
+                cursor,
+                conexao
+            )
 
     descricao = request.form.get(
         "descricao",
         ""
     ).strip()
 
+    tipo = request.form.get(
+        "tipo",
+        ""
+    ).strip().lower()
+
     valor_str = request.form.get(
         "valor",
-        ""
-    ).strip()
-
-    categoria_id_str = request.form.get(
-        "categoria_id",
         ""
     ).strip()
 
@@ -1038,25 +1064,40 @@ def nova_transacao():
         ""
     ).strip()
 
-    status_input = request.form.get(
-        "status_pago",
-        "Pendente"
+    categoria_id_str = request.form.get(
+        "categoria_id",
+        ""
     ).strip()
 
-    # -----------------------------------------------------
-    # VALIDAÇÕES
-    # -----------------------------------------------------
-
-    if tipo not in (
-        "receita",
-        "despesa"
-    ):
-
-        return "Tipo de lançamento inválido."
+    status = request.form.get(
+        "status",
+        "pago"
+    ).strip()
 
     if not descricao:
 
-        return "Informe a descrição."
+        flash(
+            "Informe a descrição.",
+            "warning"
+        )
+
+        return redirect(
+            url_for("nova_transacao")
+        )
+
+    if tipo not in [
+        "receita",
+        "despesa"
+    ]:
+
+        flash(
+            "Tipo de lançamento inválido.",
+            "warning"
+        )
+
+        return redirect(
+            url_for("nova_transacao")
+        )
 
     valor = converter_valor(
         valor_str
@@ -1064,24 +1105,38 @@ def nova_transacao():
 
     if valor is None or valor <= 0:
 
-        return "Informe um valor válido."
+        flash(
+            "Informe um valor válido.",
+            "warning"
+        )
 
-    try:
+        return redirect(
+            url_for("nova_transacao")
+        )
 
-        if data_str:
+    if data_str:
+
+        try:
 
             data_transacao = datetime.strptime(
                 data_str,
                 "%Y-%m-%d"
             ).date()
 
-        else:
+        except ValueError:
 
-            data_transacao = date.today()
+            flash(
+                "Data inválida.",
+                "warning"
+            )
 
-    except ValueError:
+            return redirect(
+                url_for("nova_transacao")
+            )
 
-        return "Data inválida."
+    else:
+
+        data_transacao = date.today()
 
     categoria_id = None
 
@@ -1095,14 +1150,7 @@ def nova_transacao():
 
         except ValueError:
 
-            return "Categoria inválida."
-
-    pago_int = (
-        1
-        if status_input == "Pago"
-        else
-        0
-    )
+            categoria_id = None
 
     conexao = None
     cursor = None
@@ -1113,57 +1161,20 @@ def nova_transacao():
 
         cursor = conexao.cursor()
 
-        # -------------------------------------------------
-        # VALIDAR CATEGORIA
-        # -------------------------------------------------
-
-        if categoria_id is not None:
-
-            cursor.execute(
-                """
-                SELECT id
-                FROM categorias
-                WHERE id = %s
-                  AND (
-                      usuario_id IS NULL
-                      OR usuario_id = %s
-                  )
-                """,
-                (
-                    categoria_id,
-                    usuario_id
-                )
-            )
-
-            categoria = cursor.fetchone()
-
-            if not categoria:
-
-                return (
-                    "A categoria selecionada "
-                    "não é válida."
-                )
-
-        # -------------------------------------------------
-        # INSERT
-        # -------------------------------------------------
-
         cursor.execute(
             """
             INSERT INTO transacoes
             (
                 usuario_id,
-                categoria_id,
-                valor,
-                tipo,
-                data,
                 descricao,
-                data_transacao,
-                pago
+                tipo,
+                valor,
+                data,
+                categoria_id,
+                status
             )
             VALUES
             (
-                %s,
                 %s,
                 %s,
                 %s,
@@ -1175,17 +1186,21 @@ def nova_transacao():
             """,
             (
                 usuario_id,
-                categoria_id,
-                valor,
-                tipo,
-                data_transacao,
                 descricao,
+                tipo,
+                valor,
                 data_transacao,
-                pago_int
+                categoria_id,
+                status
             )
         )
 
         conexao.commit()
+
+        flash(
+            "Lançamento criado com sucesso!",
+            "success"
+        )
 
         return redirect(
             url_for("lancamentos")
@@ -1197,13 +1212,17 @@ def nova_transacao():
             conexao.rollback()
 
         app.logger.exception(
-            "Erro ao criar lançamento"
+            "Erro ao criar transação"
         )
 
-        return (
-            "Erro ao criar lançamento. "
-            "Verifique os dados informados."
-        ), 500
+        flash(
+            "Erro ao criar lançamento.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("nova_transacao")
+        )
 
     except Exception:
 
@@ -1211,12 +1230,17 @@ def nova_transacao():
             conexao.rollback()
 
         app.logger.exception(
-            "Erro inesperado ao criar lançamento"
+            "Erro inesperado ao criar transação"
         )
 
-        return (
-            "Ocorreu um erro inesperado ao criar o lançamento."
-        ), 500
+        flash(
+            "Ocorreu um erro inesperado.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("nova_transacao")
+        )
 
     finally:
 
@@ -1259,57 +1283,51 @@ def editar_transacao(id):
             dictionary=True
         )
 
-        # =================================================
-        # GET - ABRIR TELA DE EDIÇÃO
-        # =================================================
+        cursor.execute(
+            """
+            SELECT
+                *
+            FROM transacoes
+            WHERE id = %s
+              AND usuario_id = %s
+            LIMIT 1
+            """,
+            (
+                id,
+                usuario_id
+            )
+        )
+
+        transacao = cursor.fetchone()
+
+        if not transacao:
+
+            flash(
+                "Lançamento não encontrado.",
+                "warning"
+            )
+
+            return redirect(
+                url_for("lancamentos")
+            )
+
+        cursor.execute(
+            """
+            SELECT
+                id,
+                nome
+            FROM categorias
+            WHERE
+                usuario_id IS NULL
+                OR usuario_id = %s
+            ORDER BY nome
+            """,
+            (usuario_id,)
+        )
+
+        categorias = cursor.fetchall()
 
         if request.method == "GET":
-
-            cursor.execute(
-                """
-                SELECT
-                    t.id,
-                    t.descricao,
-                    t.valor,
-                    t.tipo,
-                    t.data,
-                    t.pago,
-                    t.categoria_id
-                FROM transacoes t
-                WHERE t.id = %s
-                  AND t.usuario_id = %s
-                """,
-                (
-                    id,
-                    usuario_id
-                )
-            )
-
-            transacao = cursor.fetchone()
-
-            if not transacao:
-
-                return (
-                    "Lançamento não encontrado "
-                    "ou sem permissão."
-                ), 404
-
-            cursor.execute(
-                """
-                SELECT
-                    id,
-                    nome,
-                    tipo,
-                    subtipo_despesa
-                FROM categorias
-                WHERE usuario_id IS NULL
-                   OR usuario_id = %s
-                ORDER BY nome
-                """,
-                (usuario_id,)
-            )
-
-            categorias = cursor.fetchall()
 
             return render_template(
                 "editar_transacao.html",
@@ -1317,17 +1335,8 @@ def editar_transacao(id):
                 categorias=categorias
             )
 
-        # =================================================
-        # POST - SALVAR EDIÇÃO
-        # =================================================
-
         descricao = request.form.get(
             "descricao",
-            ""
-        ).strip()
-
-        valor_str = request.form.get(
-            "valor",
             ""
         ).strip()
 
@@ -1336,80 +1345,99 @@ def editar_transacao(id):
             ""
         ).strip().lower()
 
-        categoria_id_str = request.form.get(
-            "categoria_id",
-            ""
-        ).strip()
+        valor = converter_valor(
+            request.form.get(
+                "valor",
+                ""
+            )
+        )
 
         data_str = request.form.get(
             "data",
             ""
         ).strip()
 
-        status_input = request.form.get(
-            "status_pago",
+        categoria_id_str = request.form.get(
+            "categoria_id",
             ""
         ).strip()
 
-        # -------------------------------------------------
-        # DESCRIÇÃO
-        # -------------------------------------------------
+        status = request.form.get(
+            "status",
+            "pago"
+        ).strip()
 
         if not descricao:
 
-            return "Informe a descrição."
+            flash(
+                "Informe a descrição.",
+                "warning"
+            )
 
-        # -------------------------------------------------
-        # TIPO
-        # -------------------------------------------------
+            return redirect(
+                url_for(
+                    "editar_transacao",
+                    id=id
+                )
+            )
 
-        if tipo not in (
+        if tipo not in [
             "receita",
             "despesa"
-        ):
+        ]:
 
-            return "Tipo de lançamento inválido."
+            flash(
+                "Tipo inválido.",
+                "warning"
+            )
 
-        # -------------------------------------------------
-        # VALOR
-        # -------------------------------------------------
+            return redirect(
+                url_for(
+                    "editar_transacao",
+                    id=id
+                )
+            )
 
-        valor = converter_valor(
-            valor_str
-        )
+        if valor is None or valor <= 0:
 
-        if valor is None:
+            flash(
+                "Informe um valor válido.",
+                "warning"
+            )
 
-            return "Informe um valor válido."
+            return redirect(
+                url_for(
+                    "editar_transacao",
+                    id=id
+                )
+            )
 
-        if valor <= 0:
+        if data_str:
 
-            return "O valor deve ser maior que zero."
-
-        # -------------------------------------------------
-        # DATA
-        # -------------------------------------------------
-
-        try:
-
-            if data_str:
+            try:
 
                 data_transacao = datetime.strptime(
                     data_str,
                     "%Y-%m-%d"
                 ).date()
 
-            else:
+            except ValueError:
 
-                data_transacao = date.today()
+                flash(
+                    "Data inválida.",
+                    "warning"
+                )
 
-        except ValueError:
+                return redirect(
+                    url_for(
+                        "editar_transacao",
+                        id=id
+                    )
+                )
 
-            return "Data inválida."
+        else:
 
-        # -------------------------------------------------
-        # CATEGORIA
-        # -------------------------------------------------
+            data_transacao = date.today()
 
         categoria_id = None
 
@@ -1423,121 +1451,43 @@ def editar_transacao(id):
 
             except ValueError:
 
-                return "Categoria inválida."
+                categoria_id = None
 
-        # -------------------------------------------------
-        # VERIFICAR SE A TRANSAÇÃO EXISTE
-        # -------------------------------------------------
+        cursor.close()
 
-        cursor.execute(
-            """
-            SELECT
-                id,
-                descricao,
-                valor,
-                tipo,
-                data,
-                pago,
-                categoria_id
-            FROM transacoes
-            WHERE id = %s
-              AND usuario_id = %s
-            """,
-            (
-                id,
-                usuario_id
-            )
-        )
-
-        transacao_existe = cursor.fetchone()
-
-        if not transacao_existe:
-
-            return (
-                "Lançamento não encontrado "
-                "ou sem permissão."
-            ), 404
-
-        # -------------------------------------------------
-        # VERIFICAR CATEGORIA
-        # -------------------------------------------------
-
-        if categoria_id is not None:
-
-            cursor.execute(
-                """
-                SELECT id
-                FROM categorias
-                WHERE id = %s
-                  AND (
-                      usuario_id IS NULL
-                      OR usuario_id = %s
-                  )
-                """,
-                (
-                    categoria_id,
-                    usuario_id
-                )
-            )
-
-            categoria = cursor.fetchone()
-
-            if not categoria:
-
-                return (
-                    "A categoria selecionada "
-                    "não é válida."
-                )
-
-        # -------------------------------------------------
-        # STATUS
-        # -------------------------------------------------
-
-        pago_int = (
-            1
-            if status_input == "Pago"
-            else
-            0
-        )
-
-        # -------------------------------------------------
-        # UPDATE
-        # -------------------------------------------------
+        cursor = conexao.cursor()
 
         cursor.execute(
             """
             UPDATE transacoes
             SET
                 descricao = %s,
-                valor = %s,
                 tipo = %s,
+                valor = %s,
                 data = %s,
-                data_transacao = %s,
                 categoria_id = %s,
-                pago = %s
+                status = %s
             WHERE id = %s
               AND usuario_id = %s
             """,
             (
                 descricao,
-                valor,
                 tipo,
-                data_transacao,
+                valor,
                 data_transacao,
                 categoria_id,
-                pago_int,
+                status,
                 id,
                 usuario_id
             )
         )
 
-        # IMPORTANTE:
-        # Não vamos mais considerar rowcount == 0 como erro.
-        # Se o usuário salvar os mesmos dados antigos,
-        # o MySQL pode retornar 0 linhas alteradas.
-        # Mesmo assim, o UPDATE foi válido.
-
         conexao.commit()
+
+        flash(
+            "Lançamento atualizado com sucesso!",
+            "success"
+        )
 
         return redirect(
             url_for("lancamentos")
@@ -1549,13 +1499,17 @@ def editar_transacao(id):
             conexao.rollback()
 
         app.logger.exception(
-            "Erro ao editar lançamento"
+            "Erro ao editar transação"
         )
 
-        return (
-            "Erro ao editar lançamento. "
-            "Verifique os dados informados."
-        ), 500
+        flash(
+            "Erro ao editar lançamento.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("lancamentos")
+        )
 
     except Exception:
 
@@ -1563,12 +1517,17 @@ def editar_transacao(id):
             conexao.rollback()
 
         app.logger.exception(
-            "Erro inesperado ao editar lançamento"
+            "Erro inesperado ao editar transação"
         )
 
-        return (
-            "Ocorreu um erro inesperado ao editar o lançamento."
-        ), 500
+        flash(
+            "Ocorreu um erro inesperado.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("lancamentos")
+        )
 
     finally:
 
@@ -1584,11 +1543,11 @@ def editar_transacao(id):
 
 @app.route(
     "/excluir-transacao/<int:id>",
-    methods=["POST"]
+    methods=["GET", "POST"]
 )
 @app.route(
     "/excluir-lancamento/<int:id>",
-    methods=["POST"]
+    methods=["GET", "POST"]
 )
 def excluir_transacao(id):
 
@@ -1625,12 +1584,21 @@ def excluir_transacao(id):
 
             conexao.rollback()
 
-            return (
-                "Lançamento não encontrado "
-                "ou sem permissão."
-            ), 404
+            flash(
+                "Lançamento não encontrado.",
+                "warning"
+            )
+
+            return redirect(
+                url_for("lancamentos")
+            )
 
         conexao.commit()
+
+        flash(
+            "Lançamento excluído com sucesso!",
+            "success"
+        )
 
         return redirect(
             url_for("lancamentos")
@@ -1642,12 +1610,17 @@ def excluir_transacao(id):
             conexao.rollback()
 
         app.logger.exception(
-            "Erro ao excluir lançamento"
+            "Erro ao excluir transação"
         )
 
-        return (
-            "Erro ao excluir lançamento."
-        ), 500
+        flash(
+            "Erro ao excluir lançamento.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("lancamentos")
+        )
 
     except Exception:
 
@@ -1655,12 +1628,17 @@ def excluir_transacao(id):
             conexao.rollback()
 
         app.logger.exception(
-            "Erro inesperado ao excluir lançamento"
+            "Erro inesperado ao excluir transação"
         )
 
-        return (
-            "Ocorreu um erro inesperado ao excluir o lançamento."
-        ), 500
+        flash(
+            "Ocorreu um erro inesperado.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("lancamentos")
+        )
 
     finally:
 
@@ -1699,14 +1677,19 @@ def metas():
         cursor.execute(
             """
             SELECT
-                id,
-                titulo AS nome,
-                valor_alvo AS valor_meta,
-                valor_atual,
-                data_limite AS prazo
-            FROM metas
-            WHERE usuario_id = %s
-            ORDER BY data_limite ASC
+                m.id,
+                m.titulo AS nome,
+                m.valor_alvo AS valor_meta,
+                m.valor_atual,
+                m.data_limite AS prazo,
+                c.nome AS categoria
+            FROM metas m
+            LEFT JOIN categorias c
+                ON m.categoria_id = c.id
+            WHERE m.usuario_id = %s
+            ORDER BY
+                m.data_limite ASC,
+                m.id DESC
             """,
             (usuario_id,)
         )
@@ -1727,21 +1710,35 @@ def metas():
 
                 porcentagem = (
                     valor_atual
-                    /
-                    valor_meta
+                    / valor_meta
                 ) * 100
 
             else:
 
                 porcentagem = 0
 
-            meta["porcentagem"] = max(
-                0,
-                min(
-                    100,
-                    porcentagem
-                )
+            meta["porcentagem"] = round(
+                max(
+                    0,
+                    min(
+                        100,
+                        porcentagem
+                    )
+                ),
+                1
             )
+
+            if meta["prazo"]:
+
+                if isinstance(
+                    meta["prazo"],
+                    (date, datetime)
+                ):
+
+                    meta["prazo"] = (
+                        meta["prazo"]
+                        .strftime("%d/%m/%Y")
+                    )
 
         return render_template(
             "metas.html",
@@ -1754,9 +1751,15 @@ def metas():
             "Erro ao carregar metas"
         )
 
-        return (
-            "Erro ao carregar metas."
-        ), 500
+        flash(
+            "Erro ao carregar metas.",
+            "danger"
+        )
+
+        return render_template(
+            "metas.html",
+            metas=[]
+        )
 
     except Exception:
 
@@ -1764,9 +1767,15 @@ def metas():
             "Erro inesperado ao carregar metas"
         )
 
-        return (
-            "Ocorreu um erro inesperado ao carregar as metas."
-        ), 500
+        flash(
+            "Ocorreu um erro inesperado ao carregar as metas.",
+            "danger"
+        )
+
+        return render_template(
+            "metas.html",
+            metas=[]
+        )
 
     finally:
 
@@ -1782,7 +1791,15 @@ def metas():
 
 @app.route(
     "/nova-meta",
-    methods=["GET", "POST"]
+    methods=["POST"]
+)
+@app.route(
+    "/cadastrar-meta",
+    methods=["POST"]
+)
+@app.route(
+    "/nova_meta",
+    methods=["POST"]
 )
 def nova_meta():
 
@@ -1792,134 +1809,207 @@ def nova_meta():
             url_for("login")
         )
 
-    if request.method == "POST":
+    usuario_id = session["usuario_id"]
 
-        usuario_id = session[
-            "usuario_id"
-        ]
+    nome = request.form.get(
+        "nome",
+        ""
+    ).strip()
 
-        titulo = request.form.get(
-            "titulo",
-            ""
-        ).strip()
+    categoria_nome = request.form.get(
+        "categoria",
+        ""
+    ).strip()
 
-        valor_meta_str = request.form.get(
-            "valor_meta",
-            ""
-        ).strip()
+    valor_meta_str = request.form.get(
+        "valor_meta",
+        ""
+    ).strip()
 
-        prazo = request.form.get(
-            "prazo",
-            ""
-        ).strip()
+    prazo = request.form.get(
+        "prazo",
+        ""
+    ).strip()
 
-        valor_meta = converter_valor(
-            valor_meta_str
+    if not nome:
+
+        flash(
+            "Informe o nome da meta.",
+            "warning"
         )
 
-        if not titulo:
+        return redirect(
+            url_for("metas")
+        )
 
-            return "Informe o nome da meta."
+    valor_meta = converter_valor(
+        valor_meta_str
+    )
 
-        if valor_meta is None or valor_meta <= 0:
+    if valor_meta is None or valor_meta <= 0:
 
-            return "Informe um valor válido."
+        flash(
+            "Informe um valor válido para a meta.",
+            "warning"
+        )
 
-        # Validar prazo, se informado
-        prazo_data = None
+        return redirect(
+            url_for("metas")
+        )
 
-        if prazo:
+    data_limite = None
 
-            try:
-
-                prazo_data = datetime.strptime(
-                    prazo,
-                    "%Y-%m-%d"
-                ).date()
-
-            except ValueError:
-
-                return "Prazo inválido."
-
-        conexao = None
-        cursor = None
+    if prazo:
 
         try:
 
-            conexao = conectar_banco()
+            data_limite = datetime.strptime(
+                prazo,
+                "%Y-%m-%d"
+            ).date()
 
-            cursor = conexao.cursor()
+        except ValueError:
 
-            cursor.execute(
-                """
-                INSERT INTO metas
-                (
-                    usuario_id,
-                    titulo,
-                    valor_alvo,
-                    valor_atual,
-                    data_limite
-                )
-                VALUES
-                (
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s
-                )
-                """,
-                (
-                    usuario_id,
-                    titulo,
-                    valor_meta,
-                    0,
-                    prazo_data
-                )
+            flash(
+                "Data limite inválida.",
+                "warning"
             )
-
-            conexao.commit()
 
             return redirect(
                 url_for("metas")
             )
 
-        except Error:
+    conexao = None
+    cursor = None
 
-            if conexao:
-                conexao.rollback()
+    try:
 
-            app.logger.exception(
-                "Erro ao criar meta"
+        conexao = conectar_banco()
+
+        categoria_id = None
+
+        if categoria_nome:
+
+            cursor = conexao.cursor(
+                dictionary=True
             )
 
-            return (
-                "Erro ao criar meta."
-            ), 500
-
-        except Exception:
-
-            if conexao:
-                conexao.rollback()
-
-            app.logger.exception(
-                "Erro inesperado ao criar meta"
+            cursor.execute(
+                """
+                SELECT
+                    id
+                FROM categorias
+                WHERE LOWER(nome) = LOWER(%s)
+                  AND (
+                      usuario_id IS NULL
+                      OR usuario_id = %s
+                  )
+                LIMIT 1
+                """,
+                (
+                    categoria_nome,
+                    usuario_id
+                )
             )
 
-            return (
-                "Ocorreu um erro inesperado ao criar a meta."
-            ), 500
+            categoria = cursor.fetchone()
 
-        finally:
+            cursor.close()
 
-            fechar_banco(
-                cursor,
-                conexao
+            cursor = None
+
+            if categoria:
+
+                categoria_id = (
+                    categoria["id"]
+                )
+
+        cursor = conexao.cursor()
+
+        cursor.execute(
+            """
+            INSERT INTO metas
+            (
+                usuario_id,
+                titulo,
+                categoria_id,
+                valor_alvo,
+                valor_atual,
+                data_limite
             )
+            VALUES
+            (
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s
+            )
+            """,
+            (
+                usuario_id,
+                nome,
+                categoria_id,
+                valor_meta,
+                0,
+                data_limite
+            )
+        )
 
-    return render_template(
-        "nova_meta.html"
-    )
+        conexao.commit()
+
+        flash(
+            "Meta criada com sucesso!",
+            "success"
+        )
+
+        return redirect(
+            url_for("metas")
+        )
+
+    except Error:
+
+        if conexao:
+            conexao.rollback()
+
+        app.logger.exception(
+            "Erro ao cadastrar meta"
+        )
+
+        flash(
+            "Erro ao cadastrar meta. Verifique os dados informados.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("metas")
+        )
+
+    except Exception:
+
+        if conexao:
+            conexao.rollback()
+
+        app.logger.exception(
+            "Erro inesperado ao cadastrar meta"
+        )
+
+        flash(
+            "Ocorreu um erro inesperado ao salvar a meta.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("metas")
+        )
+
+    finally:
+
+        fechar_banco(
+            cursor,
+            conexao
+        )
 
 
 # =========================================================
@@ -1938,17 +2028,12 @@ def depositar_meta(id):
             url_for("login")
         )
 
-    usuario_id = session[
-        "usuario_id"
-    ]
+    usuario_id = session["usuario_id"]
 
     valor_str = request.form.get(
         "valor",
-        request.form.get(
-            "valor_adicional",
-            ""
-        )
-    )
+        ""
+    ).strip()
 
     valor = converter_valor(
         valor_str
@@ -1956,7 +2041,14 @@ def depositar_meta(id):
 
     if valor is None or valor <= 0:
 
-        return "Informe um valor válido."
+        flash(
+            "Informe um valor válido.",
+            "warning"
+        )
+
+        return redirect(
+            url_for("metas")
+        )
 
     conexao = None
     cursor = None
@@ -1967,10 +2059,10 @@ def depositar_meta(id):
 
         cursor = conexao.cursor()
 
-        # Primeiro verifica se a meta existe
         cursor.execute(
             """
-            SELECT id
+            SELECT
+                id
             FROM metas
             WHERE id = %s
               AND usuario_id = %s
@@ -1985,16 +2077,23 @@ def depositar_meta(id):
 
         if not meta:
 
-            return (
-                "Meta não encontrada "
-                "ou sem permissão."
-            ), 404
+            flash(
+                "Meta não encontrada.",
+                "warning"
+            )
+
+            return redirect(
+                url_for("metas")
+            )
 
         cursor.execute(
             """
             UPDATE metas
             SET valor_atual =
-                COALESCE(valor_atual, 0) + %s
+                COALESCE(
+                    valor_atual,
+                    0
+                ) + %s
             WHERE id = %s
               AND usuario_id = %s
             """,
@@ -2006,6 +2105,11 @@ def depositar_meta(id):
         )
 
         conexao.commit()
+
+        flash(
+            "Aporte realizado com sucesso!",
+            "success"
+        )
 
         return redirect(
             url_for("metas")
@@ -2020,9 +2124,14 @@ def depositar_meta(id):
             "Erro ao depositar na meta"
         )
 
-        return (
-            "Erro ao depositar na meta."
-        ), 500
+        flash(
+            "Erro ao realizar o aporte.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("metas")
+        )
 
     except Exception:
 
@@ -2033,9 +2142,14 @@ def depositar_meta(id):
             "Erro inesperado ao depositar na meta"
         )
 
-        return (
-            "Ocorreu um erro inesperado ao depositar na meta."
-        ), 500
+        flash(
+            "Erro inesperado ao realizar o aporte.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("metas")
+        )
 
     finally:
 
@@ -2061,9 +2175,7 @@ def excluir_meta(id):
             url_for("login")
         )
 
-    usuario_id = session[
-        "usuario_id"
-    ]
+    usuario_id = session["usuario_id"]
 
     conexao = None
     cursor = None
@@ -2090,12 +2202,21 @@ def excluir_meta(id):
 
             conexao.rollback()
 
-            return (
-                "Meta não encontrada "
-                "ou sem permissão."
-            ), 404
+            flash(
+                "Meta não encontrada.",
+                "warning"
+            )
+
+            return redirect(
+                url_for("metas")
+            )
 
         conexao.commit()
+
+        flash(
+            "Meta excluída!",
+            "info"
+        )
 
         return redirect(
             url_for("metas")
@@ -2110,9 +2231,14 @@ def excluir_meta(id):
             "Erro ao excluir meta"
         )
 
-        return (
-            "Erro ao excluir meta."
-        ), 500
+        flash(
+            "Erro ao excluir meta.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("metas")
+        )
 
     except Exception:
 
@@ -2123,9 +2249,14 @@ def excluir_meta(id):
             "Erro inesperado ao excluir meta"
         )
 
-        return (
-            "Ocorreu um erro inesperado ao excluir a meta."
-        ), 500
+        flash(
+            "Erro inesperado ao excluir a meta.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("metas")
+        )
 
     finally:
 
@@ -2136,7 +2267,7 @@ def excluir_meta(id):
 
 
 # =========================================================
-# EXECUTAR
+# EXECUÇÃO
 # =========================================================
 
 if __name__ == "__main__":
