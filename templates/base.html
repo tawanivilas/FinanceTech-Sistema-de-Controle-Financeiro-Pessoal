@@ -124,7 +124,7 @@
             background-color: rgba(0, 0, 0, 0.08);
         }
 
-        /* CONTEÚDO PRINCIPAL (COM DESLOCAMENTO PARA A SIDEBAR FIXA) */
+        /* CONTEÚDO PRINCIPAL */
         .main-wrapper {
             margin-left: 240px;
             padding: 32px;
@@ -163,25 +163,23 @@
             </div>
 
             <nav class="sidebar-nav">
-                <a href="{{ url_for('dashboard') if 'dashboard' in [] else '#' }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
-                    <i class="fa-solid fa-house"></i>
-                    Visão geral
+                <!-- Correção: Links diretos limpos e funcionais -->
+                <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                    <i class="fa-solid fa-house"></i> Visão geral
                 </a>
-                <a href="{{ url_for('lancamentos') if 'lancamentos' in [] else '#' }}" class="nav-link {% if request.endpoint == 'lancamentos' %}active{% endif %}">
-                    <i class="fa-solid fa-receipt"></i>
-                    Lançamentos
+                <a href="{{ url_for('lancamentos') }}" class="nav-link {% if request.endpoint == 'lancamentos' %}active{% endif %}">
+                    <i class="fa-solid fa-receipt"></i> Lançamentos
                 </a>
-                <a href="{{ url_for('metas') if 'metas' in [] else '#' }}" class="nav-link {% if request.endpoint == 'metas' %}active{% endif %}">
-                    <i class="fa-solid fa-bullseye"></i>
-                    Metas
+                <a href="{{ url_for('metas') }}" class="nav-link {% if request.endpoint == 'metas' %}active{% endif %}">
+                    <i class="fa-solid fa-bullseye"></i> Metas
                 </a>
             </nav>
         </div>
 
         <div>
-            <a href="{{ url_for('logout') if 'logout' in [] else '#' }}" class="logout-link">
-                <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                Sair
+            <!-- Correção: Link de logout funcional -->
+            <a href="{{ url_for('logout') }}" class="logout-link">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> Sair
             </a>
         </div>
     </aside>

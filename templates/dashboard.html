@@ -1,560 +1,261 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinanceTech - Visão Geral</title>
+{% extends "base.html" %}
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+{% block title %}Visão Geral - FinanceTech{% endblock %}
 
-    <style>
-        :root {
-            --bg-body: #f8fafc;
-            --surface: #ffffff;
-            --sidebar-bg: #ffc700;
-            --sidebar-text: #0f172a;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border-color: #f1f5f9;
-        }
+{% block styles %}
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    .page-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    .page-subtitle {
+        color: var(--text-muted);
+        margin-top: 4px;
+        margin-bottom: 0;
+    }
+    .date-selector-btn {
+        background: #fff;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .kpi-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        height: 100%;
+    }
+    .kpi-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+    .kpi-icon.success { background-color: #e6f7ed; color: #10b981; }
+    .kpi-icon.danger { background-color: #fee2e2; color: #ef4444; }
+    .kpi-icon.primary { background-color: #e0f2fe; color: #2563eb; }
+    
+    .kpi-label { color: var(--text-muted); font-size: 0.875rem; margin-bottom: 4px; }
+    .kpi-value { font-size: 1.5rem; font-weight: 700; }
+    
+    .kpi-comparison { font-size: 0.8rem; margin-top: 12px; display: flex; align-items: center; gap: 4px; }
+    .kpi-comparison.positive { color: #10b981; font-weight: 600; }
+    .kpi-comparison.negative { color: #ef4444; font-weight: 600; }
+    
+    .content-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid var(--border-color);
+        margin-bottom: 24px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+    .card-title-text { font-size: 1.1rem; font-weight: 700; margin: 0; }
+    
+    .badge-cat {
+        background-color: #f1f5f9; color: #334155; padding: 4px 10px;
+        border-radius: 6px; font-size: 0.8rem; font-weight: 500;
+        display: inline-flex; align-items: center; gap: 6px;
+    }
+    .badge-status-pago { background-color: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+    .badge-status-pendente { background-color: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+    .badge-tipo-receita { color: #16a34a; font-weight: 600; font-size: 0.85rem; }
+    .badge-tipo-despesa { color: #dc2626; font-weight: 600; font-size: 0.85rem; }
+    
+    .btn-redirect-lancamentos {
+        border: 1px solid var(--border-color); background: #fff; border-radius: 8px;
+        padding: 8px 16px; font-size: 0.875rem; font-weight: 500; color: var(--text-main);
+        text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-redirect-lancamentos:hover { background: #f8fafc; color: var(--text-main); }
+</style>
+{% endblock %}
 
-        body {
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-        }
+{% block content %}
+<!-- CABEÇALHO DA PÁGINA -->
+<div class="page-header">
+    <div>
+        <h2 class="page-title">Olá, {{ usuario if usuario else 'Usuário' }} 👋</h2>
+        <p class="page-subtitle">Aqui está o resumo das suas finanças.</p>
+    </div>
 
-        /* SIDEBAR AMARELA DA IMAGEM */
-        .sidebar-wrapper {
-            background-color: var(--sidebar-bg);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 24px 16px;
-        }
-
-        .brand-section {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding-left: 8px;
-            margin-bottom: 32px;
-        }
-
-        .brand-icon {
-            background: #000;
-            color: var(--sidebar-bg);
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-        }
-
-        .brand-text h1 {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin: 0;
-            color: #000;
-        }
-
-        .brand-text p {
-            font-size: 0.75rem;
-            margin: 0;
-            color: #333;
-        }
-
-        .sidebar-nav {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .sidebar-nav .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            color: #000;
-            font-weight: 600;
-            border-radius: 10px;
-            text-decoration: none;
-            transition: all 0.2s ease;
-        }
-
-        .sidebar-nav .nav-link.active {
-            background-color: #000;
-            color: #fff;
-        }
-
-        .sidebar-nav .nav-link:hover:not(.active) {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-
-        .logout-link {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            color: #000;
-            font-weight: 600;
-            text-decoration: none;
-            border-radius: 10px;
-        }
-
-        .logout-link:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-
-        /* MAIN CONTENT AREA */
-        .main-content {
-            padding: 32px;
-        }
-
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-
-        .page-title {
-            font-size: 1.75rem;
-            font-weight: 700;
-            margin: 0;
-        }
-
-        .page-subtitle {
-            color: var(--text-muted);
-            margin-top: 4px;
-            margin-bottom: 0;
-        }
-
-        .date-selector-btn {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 8px 16px;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-
-        /* CARDS KPI */
-        .kpi-card {
-            background: #fff;
-            border-radius: 16px;
-            padding: 24px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-            height: 100%;
-        }
-
-        .kpi-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-        }
-
-        .kpi-icon.success { background-color: #e6f7ed; color: #10b981; }
-        .kpi-icon.danger { background-color: #fee2e2; color: #ef4444; }
-        .kpi-icon.primary { background-color: #e0f2fe; color: #2563eb; }
-
-        .kpi-label {
-            color: var(--text-muted);
-            font-size: 0.875rem;
-            margin-bottom: 4px;
-        }
-
-        .kpi-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .kpi-comparison {
-            font-size: 0.8rem;
-            margin-top: 12px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .kpi-comparison.positive { color: #10b981; font-weight: 600; }
-        .kpi-comparison.negative { color: #ef4444; font-weight: 600; }
-        .kpi-comparison .text-muted { color: var(--text-muted); font-weight: 400; }
-
-        /* SEÇÃO DE GRÁFICO E TABELA */
-        .content-card {
-            background: #fff;
-            border-radius: 16px;
-            padding: 24px;
-            border: 1px solid var(--border-color);
-            margin-bottom: 24px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-        }
-
-        .card-header-flex {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .card-title-text {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin: 0;
-        }
-
-        /* TAGS DA TABELA */
-        .badge-cat {
-            background-color: #f1f5f9;
-            color: #334155;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .badge-status-pago {
-            background-color: #dcfce7;
-            color: #166534;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .badge-status-pendente {
-            background-color: #fef3c7;
-            color: #92400e;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .badge-tipo-receita { color: #16a34a; font-weight: 600; font-size: 0.85rem; }
-        .badge-tipo-despesa { color: #dc2626; font-weight: 600; font-size: 0.85rem; }
-
-        .btn-redirect-lancamentos {
-            border: 1px solid #e2e8f0;
-            background: #fff;
-            border-radius: 8px;
-            padding: 8px 16px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-main);
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-redirect-lancamentos:hover {
-            background: #f8fafc;
-            color: var(--text-main);
-        }
-    </style>
-</head>
-<body>
-
-<div class="container-fluid p-0">
-    <div class="row g-0">
-
-        <!-- SIDEBAR -->
-        <div class="col-md-3 col-lg-2">
-            <div class="sidebar-wrapper">
-                <div>
-                    <div class="brand-section">
-                        <div class="brand-icon">
-                            <i class="fa-solid fa-chart-simple"></i>
-                        </div>
-                        <div class="brand-text">
-                            <h1>FinanceTech</h1>
-                            <p>Controle Financeiro</p>
-                        </div>
-                    </div>
-
-                    <nav class="sidebar-nav">
-                        <a href="{{ url_for('dashboard') }}" class="nav-link active">
-                            <i class="fa-solid fa-house"></i>
-                            Visão geral
-                        </a>
-                        <a href="{{ url_for('lancamentos') if 'lancamentos' in [] else '#' }}" class="nav-link">
-                            <i class="fa-solid fa-receipt"></i>
-                            Lançamentos
-                        </a>
-                        <a href="{{ url_for('metas') if 'metas' in [] else '#' }}" class="nav-link">
-                            <i class="fa-solid fa-bullseye"></i>
-                            Metas
-                        </a>
-                    </nav>
-                </div>
-
-                <div>
-                    <a href="{{ url_for('logout') if 'logout' in [] else '#' }}" class="logout-link">
-                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                        Sair
-                    </a>
-                </div>
-            </div>
+    <!-- Filtro de Mês/Data -->
+    <form method="GET" class="d-flex align-items-center">
+        <div class="date-selector-btn">
+            <i class="fa-regular fa-calendar text-muted"></i>
+            <select name="mes" class="border-0 bg-transparent fw-medium" style="outline: none; cursor: pointer;" onchange="this.form.submit()">
+                {% if meses %}
+                    {% for mes in meses %}
+                        <option value="{{ mes.valor }}" {% if mes.valor == mes_atual %}selected{% endif %}>{{ mes.nome }}</option>
+                    {% endfor %}
+                {% else %}
+                    <option>03 de setembro de 2026</option>
+                {% endif %}
+            </select>
         </div>
+    </form>
+</div>
 
-        <!-- CONTEÚDO PRINCIPAL -->
-        <div class="col-md-9 col-lg-10">
-            <main class="main-content">
-
-                <!-- CABEÇALHO DA PÁGINA -->
-                <div class="page-header">
-                    <div>
-                        <h2 class="page-title">Olá, {{ usuario.nome if usuario else 'Maria' }} 👋</h2>
-                        <p class="page-subtitle">Aqui está o resumo das suas finanças.</p>
-                    </div>
-
-                    <!-- Filtro de Mês/Data -->
-                    <form method="GET" class="d-flex align-items-center">
-                        <div class="date-selector-btn">
-                            <i class="fa-regular fa-calendar text-muted"></i>
-                            <select name="mes" class="border-0 bg-transparent fw-medium" style="outline: none; cursor: pointer;" onchange="this.form.submit()">
-                                {% if meses %}
-                                    {% for mes in meses %}
-                                        <option value="{{ mes }}" {% if mes == mes_atual %}selected{% endif %}>{{ mes }}</option>
-                                    {% endfor %}
-                                {% else %}
-                                    <option>03 de setembro de 2026</option>
-                                {% endif %}
-                            </select>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- CARDS DE MÉTRICAS (RECEITAS, DESPESAS, SALDO) -->
-                <div class="row g-3 mb-4">
-                    <!-- Receitas -->
-                    <div class="col-md-4">
-                        <div class="kpi-card d-flex flex-column justify-content-between">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <div class="kpi-label">Receitas</div>
-                                    <div class="kpi-value text-success">
-                                        R$ {{ "%.2f"|format(total_receitas) if total_receitas is defined else "8.500,00" }}
-                                    </div>
-                                </div>
-                                <div class="kpi-icon success">
-                                    <i class="fa-solid fa-arrow-trend-up"></i>
-                                </div>
-                            </div>
-                            <div class="kpi-comparison positive">
-                                +12,4% <span class="text-muted">vs mês anterior</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Despesas -->
-                    <div class="col-md-4">
-                        <div class="kpi-card d-flex flex-column justify-content-between">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <div class="kpi-label">Despesas</div>
-                                    <div class="kpi-value text-danger">
-                                        R$ {{ "%.2f"|format(total_despesas) if total_despesas is defined else "4.230,00" }}
-                                    </div>
-                                </div>
-                                <div class="kpi-icon danger">
-                                    <i class="fa-solid fa-arrow-trend-down"></i>
-                                </div>
-                            </div>
-                            <div class="kpi-comparison negative">
-                                -3,2% <span class="text-muted">vs mês anterior</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Saldo -->
-                    <div class="col-md-4">
-                        <div class="kpi-card d-flex flex-column justify-content-between">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <div class="kpi-label">Saldo</div>
-                                    <div class="kpi-value text-primary">
-                                        R$ {{ "%.2f"|format(saldo_mes) if saldo_mes is defined else "4.270,00" }}
-                                    </div>
-                                </div>
-                                <div class="kpi-icon primary">
-                                    <i class="fa-solid fa-wallet"></i>
-                                </div>
-                            </div>
-                            <div class="kpi-comparison positive">
-                                +18,7% <span class="text-muted">vs mês anterior</span>
-                            </div>
-                        </div>
+<!-- CARDS DE MÉTRICAS (RECEITAS, DESPESAS, SALDO) -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="kpi-card d-flex flex-column justify-content-between">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="kpi-label">Receitas</div>
+                    <div class="kpi-value text-success">
+                        R$ {{ "%.2f"|format(total_receitas) if total_receitas is defined else "8.500,00" }}
                     </div>
                 </div>
+                <div class="kpi-icon success"><i class="fa-solid fa-arrow-trend-up"></i></div>
+            </div>
+            <div class="kpi-comparison positive">+12,4% <span class="text-muted">vs mês anterior</span></div>
+        </div>
+    </div>
 
-                <!-- GRÁFICO DE DESPESAS POR CATEGORIA -->
-                <div class="content-card">
-                    <h5 class="card-title-text mb-4">Despesas por categoria</h5>
-                    <div class="row align-items-center">
-                        <div class="col-md-6 d-flex justify-content-center">
-                            <div style="width: 240px; height: 240px;">
-                                <canvas id="despesasPieChart"></canvas>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div id="customLegend" class="d-flex flex-column gap-2 pe-md-4">
-                                <!-- Legenda customizada dinamicamente gerada via JS -->
-                            </div>
-                        </div>
+    <div class="col-md-4">
+        <div class="kpi-card d-flex flex-column justify-content-between">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="kpi-label">Despesas</div>
+                    <div class="kpi-value text-danger">
+                        R$ {{ "%.2f"|format(total_despesas) if total_despesas is defined else "4.230,00" }}
                     </div>
                 </div>
+                <div class="kpi-icon danger"><i class="fa-solid fa-arrow-trend-down"></i></div>
+            </div>
+            <div class="kpi-comparison negative">-3,2% <span class="text-muted">vs mês anterior</span></div>
+        </div>
+    </div>
 
-                <!-- ÚLTIMOS LANÇAMENTOS -->
-                <div class="content-card">
-                    <div class="card-header-flex">
-                        <h5 class="card-title-text">Últimos lançamentos</h5>
-                        <a href="{{ url_for('lancamentos') if 'lancamentos' in [] else '#' }}" class="text-primary text-decoration-none font-weight-bold" style="font-size: 0.9rem;">
-                            Ver todos
-                        </a>
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="table table-borderless align-middle mb-0">
-                            <thead>
-                                <tr class="text-muted border-bottom" style="font-size: 0.85rem;">
-                                    <th class="fw-medium pb-2">Data</th>
-                                    <th class="fw-medium pb-2">Descrição</th>
-                                    <th class="fw-medium pb-2">Categoria</th>
-                                    <th class="fw-medium pb-2">Tipo</th>
-                                    <th class="fw-medium pb-2">Valor</th>
-                                    <th class="fw-medium pb-2">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% if transacoes %}
-                                    {% for t in transacoes[:5] %}
-                                    <tr class="border-bottom">
-                                        <td class="text-muted" style="font-size: 0.9rem;">{{ t.data }}</td>
-                                        <td class="fw-medium">{{ t.descricao }}</td>
-                                        <td><span class="badge-cat"><i class="fa-solid fa-tag text-muted"></i> {{ t.categoria }}</span></td>
-                                        <td>
-                                            {% if t.tipo == 'receita' %}
-                                                <span class="badge-tipo-receita">Receita</span>
-                                            {% else %}
-                                                <span class="badge-tipo-despesa">Despesa</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="fw-bold {% if t.tipo == 'receita' %}text-success{% else %}text-danger{% endif %}">
-                                            {% if t.tipo == 'receita' %}+{% else %}-{% endif %}R$ {{ "%.2f"|format(t.valor) }}
-                                        </td>
-                                        <td>
-                                            {% if t.status == 'Pendente' %}
-                                                <span class="badge-status-pendente">Pendente</span>
-                                            {% else %}
-                                                <span class="badge-status-pago">Pago</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                {% else %}
-                                    <!-- DADOS DEMONSTRATIVOS SE NÃO HOUVER TRANSAÇÕES DO PYTHON -->
-                                    <tr class="border-bottom">
-                                        <td class="text-muted" style="font-size: 0.9rem;">03/09/2026</td>
-                                        <td class="fw-medium">Salário</td>
-                                        <td><span class="badge-cat"><i class="fa-solid fa-briefcase text-warning"></i> Trabalho</span></td>
-                                        <td><span class="badge-tipo-receita">Receita</span></td>
-                                        <td class="fw-bold text-success">+R$ 5.000,00</td>
-                                        <td><span class="badge-status-pago">Pago</span></td>
-                                    </tr>
-                                    <tr class="border-bottom">
-                                        <td class="text-muted" style="font-size: 0.9rem;">02/09/2026</td>
-                                        <td class="fw-medium">Supermercado</td>
-                                        <td><span class="badge-cat"><i class="fa-solid fa-cart-shopping text-danger"></i> Alimentação</span></td>
-                                        <td><span class="badge-tipo-despesa">Despesa</span></td>
-                                        <td class="fw-bold text-danger">-R$ 320,00</td>
-                                        <td><span class="badge-status-pago">Pago</span></td>
-                                    </tr>
-                                    <tr class="border-bottom">
-                                        <td class="text-muted" style="font-size: 0.9rem;">01/09/2026</td>
-                                        <td class="fw-medium">Internet</td>
-                                        <td><span class="badge-cat"><i class="fa-solid fa-house text-primary"></i> Casa</span></td>
-                                        <td><span class="badge-tipo-despesa">Despesa</span></td>
-                                        <td class="fw-bold text-danger">-R$ 120,00</td>
-                                        <td><span class="badge-status-pendente">Pendente</span></td>
-                                    </tr>
-                                    <tr class="border-bottom">
-                                        <td class="text-muted" style="font-size: 0.9rem;">31/08/2026</td>
-                                        <td class="fw-medium">Uber</td>
-                                        <td><span class="badge-cat"><i class="fa-solid fa-car text-purple"></i> Transporte</span></td>
-                                        <td><span class="badge-tipo-despesa">Despesa</span></td>
-                                        <td class="fw-bold text-danger">-R$ 45,00</td>
-                                        <td><span class="badge-status-pago">Pago</span></td>
-                                    </tr>
-                                    <tr class="border-bottom">
-                                        <td class="text-muted" style="font-size: 0.9rem;">31/08/2026</td>
-                                        <td class="fw-medium">Freelance</td>
-                                        <td><span class="badge-cat"><i class="fa-solid fa-briefcase text-warning"></i> Trabalho</span></td>
-                                        <td><span class="badge-tipo-receita">Receita</span></td>
-                                        <td class="fw-bold text-success">+R$ 800,00</td>
-                                        <td><span class="badge-status-pago">Pago</span></td>
-                                    </tr>
-                                {% endif %}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="mt-3">
-                        <a href="{{ url_for('lancamentos') if 'lancamentos' in [] else '#' }}" class="btn-redirect-lancamentos">
-                            <i class="fa-solid fa-receipt text-muted"></i> Ver todos os lançamentos
-                        </a>
+    <div class="col-md-4">
+        <div class="kpi-card d-flex flex-column justify-content-between">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="kpi-label">Saldo</div>
+                    <div class="kpi-value text-primary">
+                        R$ {{ "%.2f"|format(saldo_mes) if saldo_mes is defined else "4.270,00" }}
                     </div>
                 </div>
-
-            </main>
+                <div class="kpi-icon primary"><i class="fa-solid fa-wallet"></i></div>
+            </div>
+            <div class="kpi-comparison positive">+18,7% <span class="text-muted">vs mês anterior</span></div>
         </div>
     </div>
 </div>
 
-<!-- SCRIPTS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- GRÁFICO DE DESPESAS POR CATEGORIA -->
+<div class="content-card">
+    <h5 class="card-title-text mb-4">Despesas por categoria</h5>
+    <div class="row align-items-center">
+        <div class="col-md-6 d-flex justify-content-center">
+            <div style="width: 240px; height: 240px;">
+                <canvas id="despesasPieChart"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div id="customLegend" class="d-flex flex-column gap-2 pe-md-4"></div>
+        </div>
+    </div>
+</div>
 
-<script>
-    // DADOS DO GRÁFICO (PIE/DOUGHNUT)
-    const backendData = {{ despesas_cat_mes | tojson if despesas_cat_mes is defined else 'null' }};
+<!-- ÚLTIMOS LANÇAMENTOS -->
+<div class="content-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="card-title-text">Últimos lançamentos</h5>
+        <a href="{{ url_for('lancamentos') }}" class="text-primary text-decoration-none fw-bold" style="font-size: 0.9rem;">Ver todos</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-borderless align-middle mb-0">
+            <thead>
+                <tr class="text-muted border-bottom" style="font-size: 0.85rem;">
+                    <th class="fw-medium pb-2">Data</th>
+                    <th class="fw-medium pb-2">Descrição</th>
+                    <th class="fw-medium pb-2">Categoria</th>
+                    <th class="fw-medium pb-2">Tipo</th>
+                    <th class="fw-medium pb-2">Valor</th>
+                    <th class="fw-medium pb-2">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if transacoes %}
+                    {% for t in transacoes[:5] %}
+                    <tr class="border-bottom">
+                        <td class="text-muted" style="font-size: 0.9rem;">{{ t.data }}</td>
+                        <td class="fw-medium">{{ t.descricao }}</td>
+                        <td><span class="badge-cat"><i class="fa-solid fa-tag text-muted"></i> {{ t.categoria }}</span></td>
+                        <td>
+                            {% if t.tipo == 'receita' %}<span class="badge-tipo-receita">Receita</span>
+                            {% else %}<span class="badge-tipo-despesa">Despesa</span>{% endif %}
+                        </td>
+                        <td class="fw-bold {% if t.tipo == 'receita' %}text-success{% else %}text-danger{% endif %}">
+                            {% if t.tipo == 'receita' %}+{% else %}-{% endif %}R$ {{ "%.2f"|format(t.valor) }}
+                        </td>
+                        <td>
+                            {% if t.status == 'Pendente' %}<span class="badge-status-pendente">Pendente</span>
+                            {% else %}<span class="badge-status-pago">Pago</span>{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <!-- Dados Fictícios de demonstração -->
+                    <tr class="border-bottom">
+                        <td class="text-muted" style="font-size: 0.9rem;">03/09/2026</td>
+                        <td class="fw-medium">Salário</td>
+                        <td><span class="badge-cat"><i class="fa-solid fa-briefcase text-warning"></i> Trabalho</span></td>
+                        <td><span class="badge-tipo-receita">Receita</span></td>
+                        <td class="fw-bold text-success">+R$ 5.000,00</td>
+                        <td><span class="badge-status-pago">Pago</span></td>
+                    </tr>
+                    <tr class="border-bottom">
+                        <td class="text-muted" style="font-size: 0.9rem;">02/09/2026</td>
+                        <td class="fw-medium">Supermercado</td>
+                        <td><span class="badge-cat"><i class="fa-solid fa-cart-shopping text-danger"></i> Alimentação</span></td>
+                        <td><span class="badge-tipo-despesa">Despesa</span></td>
+                        <td class="fw-bold text-danger">-R$ 320,00</td>
+                        <td><span class="badge-status-pago">Pago</span></td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
     
-    // Dados padrão caso o backend não passe os valores
-    const defaultData = {
-        'Alimentação': 35,
-        'Casa': 25,
-        'Transporte': 15,
-        'Lazer': 10,
-        'Saúde': 8,
-        'Outros': 7
-    };
+    <div class="mt-4">
+        <a href="{{ url_for('lancamentos') }}" class="btn-redirect-lancamentos">
+            <i class="fa-solid fa-receipt text-muted"></i> Ver todos os lançamentos
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Gráfico de Despesas (Doughnut Chart)
+    const backendData = {{ despesas_cat_mes | tojson if despesas_cat_mes is defined else 'null' }};
+    const defaultData = { 'Alimentação': 35, 'Casa': 25, 'Transporte': 15, 'Lazer': 10, 'Saúde': 8, 'Outros': 7 };
 
     const dataToUse = backendData && Object.keys(backendData).length > 0 ? backendData : defaultData;
     const labels = Object.keys(dataToUse);
     const values = Object.values(dataToUse);
-
     const colors = ['#ef4444', '#2563eb', '#f59e0b', '#10b981', '#8b5cf6', '#94a3b8'];
 
     const ctx = document.getElementById('despesasPieChart');
@@ -574,24 +275,20 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 cutout: '65%',
-                plugins: {
-                    legend: { display: false }
-                }
+                plugins: { legend: { display: false } }
             }
         });
 
-        // Gerar Legenda Customizada igual à imagem
+        // Legenda Customizada
         const legendContainer = document.getElementById('customLegend');
         const total = values.reduce((a, b) => a + b, 0);
 
         labels.forEach((label, index) => {
             const val = values[index];
-            const percentage = total > 0 ? Math.round((val / total) * (total === 100 ? 1 : 100)) : 0;
-
+            const percentage = total > 0 ? Math.round((val / total) * 100) : 0;
             const itemDiv = document.createElement('div');
             itemDiv.className = 'd-flex justify-content-between align-items-center py-1';
             itemDiv.style.fontSize = '0.9rem';
-
             itemDiv.innerHTML = `
                 <div class="d-flex align-items-center gap-2">
                     <span style="width: 10px; height: 10px; border-radius: 50%; background-color: ${colors[index % colors.length]}; display: inline-block;"></span>
@@ -599,11 +296,8 @@
                 </div>
                 <span class="fw-bold">${percentage}%</span>
             `;
-
             legendContainer.appendChild(itemDiv);
         });
     }
 </script>
-
-</body>
-</html>
+{% endblock %}
