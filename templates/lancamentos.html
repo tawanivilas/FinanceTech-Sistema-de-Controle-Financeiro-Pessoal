@@ -253,22 +253,17 @@
        ========================================================= */
 
     @media (max-width: 992px) {
-
         .table-lancamentos {
             min-width: 850px;
         }
-
     }
 
-
     @media (max-width: 768px) {
-
         .filter-card,
         .main-card,
         .side-form-card {
             padding: 15px;
         }
-
     }
 
 </style>
@@ -285,20 +280,15 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
 
     <div>
-
         <h3 class="fw-bold m-0 text-dark fs-4">
             Lançamentos
         </h3>
-
         <p class="text-muted small m-0">
             Gerencie todas as suas receitas e despesas.
         </p>
-
     </div>
 
-
     <div class="d-flex align-items-center gap-3">
-
         <i
             class="fa-regular fa-bell text-secondary fs-5"
             style="cursor: pointer;"
@@ -310,7 +300,6 @@
             class="form-control form-control-sm border-0 shadow-sm"
             style="width: auto;"
         >
-
     </div>
 
 </div>
@@ -330,196 +319,120 @@
 
         <div class="row g-2 mb-3">
 
-
-            <!-- =================================================
-                 PERÍODO
-                 ================================================= -->
-
+            <!-- PERÍODO -->
             <div class="col-md-3">
-
                 <label class="form-label small fw-semibold text-secondary">
                     Período
                 </label>
-
                 <select
                     name="periodo"
                     id="selectPeriodo"
                     class="form-select form-select-sm"
                 >
-
                     <option
                         value="este_mes"
-                        {% if request.args.get('periodo', 'este_mes') == 'este_mes' %}
-                            selected
-                        {% endif %}
+                        {% if request.args.get('periodo', 'este_mes') == 'este_mes' %}selected{% endif %}
                     >
                         Este mês
                     </option>
-
                     <option
                         value="hoje"
-                        {% if request.args.get('periodo') == 'hoje' %}
-                            selected
-                        {% endif %}
+                        {% if request.args.get('periodo') == 'hoje' %}selected{% endif %}
                     >
                         Hoje
                     </option>
-
                     <option
                         value="7_dias"
-                        {% if request.args.get('periodo') == '7_dias' %}
-                            selected
-                        {% endif %}
+                        {% if request.args.get('periodo') == '7_dias' %}selected{% endif %}
                     >
                         7 dias
                     </option>
-
                     <option
                         value="mes_passado"
-                        {% if request.args.get('periodo') == 'mes_passado' %}
-                            selected
-                        {% endif %}
+                        {% if request.args.get('periodo') == 'mes_passado' %}selected{% endif %}
                     >
                         Mês passado
                     </option>
-
                 </select>
-
             </div>
 
-
-            <!-- =================================================
-                 TIPO
-                 ================================================= -->
-
+            <!-- TIPO -->
             <div class="col-md-3">
-
                 <label class="form-label small fw-semibold text-secondary">
                     Tipo
                 </label>
-
                 <select
                     name="tipo"
                     class="form-select form-select-sm"
                 >
-
-                    <option value="">
-                        Todos
-                    </option>
-
+                    <option value="">Todos</option>
                     <option
                         value="receita"
-                        {% if request.args.get('tipo') == 'receita' %}
-                            selected
-                        {% endif %}
+                        {% if request.args.get('tipo') == 'receita' %}selected{% endif %}
                     >
                         Receita
                     </option>
-
                     <option
                         value="despesa"
-                        {% if request.args.get('tipo') == 'despesa' %}
-                            selected
-                        {% endif %}
+                        {% if request.args.get('tipo') == 'despesa' %}selected{% endif %}
                     >
                         Despesa
                     </option>
-
                 </select>
-
             </div>
 
-
-            <!-- =================================================
-                 CATEGORIA
-                 ================================================= -->
-
+            <!-- CATEGORIA -->
             <div class="col-md-3">
-
                 <label class="form-label small fw-semibold text-secondary">
                     Categoria
                 </label>
-
                 <select
                     name="categoria_id"
                     class="form-select form-select-sm"
                 >
-
-                    <option value="">
-                        Todas
-                    </option>
-
+                    <option value="">Todas</option>
                     {% for cat in categorias %}
-
                         <option
                             value="{{ cat.id }}"
-                            {% if request.args.get('categoria_id')|int == cat.id %}
-                                selected
-                            {% endif %}
+                            {% if request.args.get('categoria_id')|int == cat.id %}selected{% endif %}
                         >
                             {{ cat.nome }}
                         </option>
-
                     {% endfor %}
-
                 </select>
-
             </div>
 
-
-            <!-- =================================================
-                 STATUS
-                 ================================================= -->
-
+            <!-- STATUS -->
             <div class="col-md-3">
-
                 <label class="form-label small fw-semibold text-secondary">
                     Status
                 </label>
-
                 <select
                     name="status"
                     class="form-select form-select-sm"
                 >
-
-                    <option value="">
-                        Todos
-                    </option>
-
+                    <option value="">Todos</option>
                     <option
                         value="Pago"
-                        {% if request.args.get('status') == 'Pago' %}
-                            selected
-                        {% endif %}
+                        {% if request.args.get('status') == 'Pago' %}selected{% endif %}
                     >
                         Pago
                     </option>
-
                     <option
                         value="Pendente"
-                        {% if request.args.get('status') == 'Pendente' %}
-                            selected
-                        {% endif %}
+                        {% if request.args.get('status') == 'Pendente' %}selected{% endif %}
                     >
                         Pendente
                     </option>
-
                 </select>
-
             </div>
 
         </div>
 
-
-        <!-- =================================================
-             BOTÕES DE PERÍODO
-             ================================================= -->
-
+        <!-- BOTÕES DE PERÍODO E AÇÕES -->
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
 
-
             <div class="d-flex gap-1 flex-wrap">
-
                 <button
                     type="button"
                     class="btn btn-sm btn-outline-secondary btn-periodo"
@@ -527,7 +440,6 @@
                 >
                     Hoje
                 </button>
-
                 <button
                     type="button"
                     class="btn btn-sm btn-outline-secondary btn-periodo"
@@ -535,7 +447,6 @@
                 >
                     7 dias
                 </button>
-
                 <button
                     type="button"
                     class="btn btn-sm btn-outline-secondary btn-periodo"
@@ -543,7 +454,6 @@
                 >
                     Este mês
                 </button>
-
                 <button
                     type="button"
                     class="btn btn-sm btn-outline-secondary btn-periodo"
@@ -551,29 +461,21 @@
                 >
                     Mês passado
                 </button>
-
             </div>
 
-
-            <!-- FILTRAR / LIMPAR -->
-
             <div class="d-flex gap-2">
-
                 <button
                     type="submit"
                     class="btn btn-sm btn-dark px-3"
                 >
-                    <i class="fa-solid fa-filter"></i>
-                    Filtrar
+                    <i class="fa-solid fa-filter me-1"></i> Filtrar
                 </button>
-
                 <a
                     href="{{ url_for('lancamentos') }}"
                     class="btn btn-sm btn-light border"
                 >
                     Limpar filtros
                 </a>
-
             </div>
 
         </div>
@@ -589,43 +491,29 @@
 
 <div class="row g-4">
 
-
     <!-- =====================================================
          TABELA DE LANÇAMENTOS
          ===================================================== -->
-
     <div class="col-lg-8">
-
         <div class="main-card shadow-sm">
 
-
-            <!-- CABEÇALHO DA TABELA -->
-
             <div class="d-flex justify-content-between align-items-center mb-3">
-
                 <div class="d-flex align-items-center gap-2">
-
                     <h5 class="fw-bold m-0 fs-6">
                         Todos os lançamentos
                     </h5>
-
                     <span class="badge bg-light text-dark border rounded-pill">
                         {{ lancamentos|length if lancamentos else 0 }}
                     </span>
-
                 </div>
 
-
                 <div class="d-flex gap-2">
-
                     <button
                         type="button"
                         class="btn btn-sm btn-light border btn-exportar"
                     >
-                        <i class="fa-solid fa-download"></i>
-                        Exportar
+                        <i class="fa-solid fa-download me-1"></i> Exportar
                     </button>
-
                     <button
                         type="button"
                         class="btn btn-sm btn-dark"
@@ -634,110 +522,46 @@
                     >
                         + Novo lançamento
                     </button>
-
                 </div>
-
             </div>
 
-
-            <!-- =================================================
-                 TABELA
-                 ================================================= -->
-
             <div class="table-responsive">
-
                 <table class="table table-borderless table-lancamentos m-0">
-
                     <thead>
-
                         <tr>
-
-                            <th>
-                                Data
-                            </th>
-
-                            <th>
-                                Descrição
-                            </th>
-
-                            <th>
-                                Categoria
-                            </th>
-
-                            <th>
-                                Tipo
-                            </th>
-
-                            <th>
-                                Valor
-                            </th>
-
-                            <th>
-                                Status
-                            </th>
-
-                            <th class="text-end">
-                                Ações
-                            </th>
-
+                            <th>Data</th>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Tipo</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                            <th class="text-end">Ações</th>
                         </tr>
-
                     </thead>
-
-
                     <tbody>
-
                         {% if lancamentos %}
-
                             {% for item in lancamentos %}
-
                                 <tr>
-
-
-                                    <!-- =================================
-                                         DATA
-                                         ================================= -->
-
+                                    <!-- DATA -->
                                     <td class="text-secondary">
-
                                         {% if item.data %}
-
                                             {% if item.data.strftime %}
-
                                                 {{ item.data.strftime('%d/%m/%Y') }}
-
                                             {% else %}
-
                                                 {{ item.data }}
-
                                             {% endif %}
-
                                         {% else %}
-
                                             -
-
                                         {% endif %}
-
                                     </td>
 
-
-                                    <!-- =================================
-                                         DESCRIÇÃO
-                                         ================================= -->
-
+                                    <!-- DESCRIÇÃO -->
                                     <td class="fw-semibold text-dark">
-
                                         {{ item.descricao or 'Sem descrição' }}
-
                                     </td>
 
-
-                                    <!-- =================================
-                                         CATEGORIA
-                                         ================================= -->
-
+                                    <!-- CATEGORIA -->
                                     <td>
-
                                         {% set cat_slug = (
                                             item.categoria_nome
                                             |lower
@@ -756,111 +580,42 @@
                                             |replace(' ','-')
                                         ) if item.categoria_nome else 'outros' %}
 
-
                                         <span class="badge-cat badge-{{ cat_slug }}">
-
                                             <i class="fa-solid fa-tag"></i>
-
                                             {{ item.categoria_nome if item.categoria_nome else 'Sem Categoria' }}
-
                                         </span>
-
                                     </td>
 
-
-                                    <!-- =================================
-                                         TIPO
-                                         ================================= -->
-
+                                    <!-- TIPO -->
                                     <td>
-
                                         {% if item.tipo == 'receita' %}
-
-                                            <span class="badge-tipo-receita">
-                                                Receita
-                                            </span>
-
+                                            <span class="badge-tipo-receita">Receita</span>
                                         {% else %}
-
-                                            <span class="badge-tipo-despesa">
-                                                Despesa
-                                            </span>
-
+                                            <span class="badge-tipo-despesa">Despesa</span>
                                         {% endif %}
-
                                     </td>
 
-
-                                    <!-- =================================
-                                         VALOR
-                                         ================================= -->
-
-                                    <td
-                                        class="fw-bold
-                                        {% if item.tipo == 'receita' %}
-                                            text-success
-                                        {% else %}
-                                            text-danger
-                                        {% endif %}"
-                                    >
-
-                                        {% if item.tipo == 'receita' %}
-
-                                            +R$ {{ "%.2f"|format(item.valor|float) }}
-
-                                        {% else %}
-
-                                            -R$ {{ "%.2f"|format(item.valor|float) }}
-
-                                        {% endif %}
-
+                                    <!-- VALOR -->
+                                    <td class="fw-bold {% if item.tipo == 'receita' %}text-success{% else %}text-danger{% endif %}">
+                                        {% if item.tipo == 'receita' %}+{% else %}-{% endif %}R$ {{ "%.2f"|format(item.valor|float) }}
                                     </td>
 
-
-                                    <!-- =================================
-                                         STATUS
-                                         ================================= -->
-
+                                    <!-- STATUS -->
                                     <td>
-
-                                        <span
-                                            class="{% if item.status == 'Pago' %}badge-pago{% else %}badge-pendente{% endif %}"
-                                        >
-
+                                        <span class="{% if item.status == 'Pago' %}badge-pago{% else %}badge-pendente{% endif %}">
                                             {{ item.status }}
-
                                         </span>
-
                                     </td>
 
-
-                                    <!-- =================================
-                                         AÇÕES
-                                         ================================= -->
-
+                                    <!-- AÇÕES -->
                                     <td class="text-end">
-
-
-                                        <!-- =============================
-                                             EDITAR
-                                             GET
-                                             ============================= -->
-
                                         <a
                                             href="{{ url_for('editar_transacao', id=item.id) }}"
                                             class="btn-acao btn-editar"
                                             title="Editar lançamento"
                                         >
-
                                             <i class="fa-regular fa-pen-to-square"></i>
-
                                         </a>
-
-
-                                        <!-- =============================
-                                             EXCLUIR
-                                             POST
-                                             ============================= -->
 
                                         <form
                                             action="{{ url_for('excluir_transacao', id=item.id) }}"
@@ -868,85 +623,44 @@
                                             class="d-inline"
                                             onsubmit="return confirm('Tem certeza que deseja excluir este lançamento?');"
                                         >
-
                                             <button
                                                 type="submit"
                                                 class="btn-acao btn-excluir"
                                                 title="Excluir lançamento"
                                             >
-
                                                 <i class="fa-regular fa-trash-can"></i>
-
                                             </button>
-
                                         </form>
-
-
                                     </td>
-
                                 </tr>
-
                             {% endfor %}
-
-
                         {% else %}
-
-
-                            <!-- =========================================
-                                 SEM LANÇAMENTOS
-                                 ========================================= -->
-
                             <tr>
-
-                                <td
-                                    colspan="7"
-                                    class="text-center py-4 text-muted"
-                                >
-
-                                    <i
-                                        class="fa-regular fa-folder-open mb-2 fs-4 d-block"
-                                    ></i>
-
+                                <td colspan="7" class="text-center py-4 text-muted">
+                                    <i class="fa-regular fa-folder-open mb-2 fs-4 d-block"></i>
                                     Nenhum lançamento encontrado.
-
                                 </td>
-
                             </tr>
-
-
                         {% endif %}
-
                     </tbody>
-
                 </table>
-
             </div>
 
         </div>
-
     </div>
 
 
     <!-- =====================================================
          PAINEL LATERAL - NOVO LANÇAMENTO
          ===================================================== -->
-
     <div
         class="col-lg-4 collapse show"
         id="panelNovoLancamento"
     >
-
         <div class="side-form-card shadow-sm">
 
-
-            <!-- CABEÇALHO -->
-
             <div class="d-flex justify-content-between align-items-center mb-3">
-
-                <h5 class="fw-bold m-0 fs-6">
-                    Novo lançamento
-                </h5>
-
+                <h5 class="fw-bold m-0 fs-6">Novo lançamento</h5>
                 <button
                     type="button"
                     class="btn-close"
@@ -954,36 +668,20 @@
                     data-bs-target="#panelNovoLancamento"
                     aria-label="Fechar"
                 ></button>
-
             </div>
 
-
-            <!-- =================================================
-                 FORMULÁRIO NOVO LANÇAMENTO
-                 ================================================= -->
-
+            <!-- FORMULÁRIO -->
             <form
                 action="{{ url_for('nova_transacao') }}"
                 method="POST"
             >
 
-
-                <!-- =============================================
-                     TIPO
-                     ============================================= -->
-
+                <!-- TIPO -->
                 <div class="mb-3">
-
                     <label class="form-label small fw-semibold text-secondary">
                         Tipo
                     </label>
-
-
                     <div class="d-flex gap-2">
-
-
-                        <!-- RECEITA -->
-
                         <input
                             type="radio"
                             class="btn-check"
@@ -992,20 +690,12 @@
                             value="receita"
                             checked
                         >
-
                         <label
                             class="btn-type-selector active-receita"
                             for="tipoReceita"
                         >
-
-                            <i class="fa-solid fa-arrow-up"></i>
-
-                            Receita
-
+                            <i class="fa-solid fa-arrow-up"></i> Receita
                         </label>
-
-
-                        <!-- DESPESA -->
 
                         <input
                             type="radio"
@@ -1014,33 +704,20 @@
                             id="tipoDespesa"
                             value="despesa"
                         >
-
                         <label
                             class="btn-type-selector"
                             for="tipoDespesa"
                         >
-
-                            <i class="fa-solid fa-arrow-down"></i>
-
-                            Despesa
-
+                            <i class="fa-solid fa-arrow-down"></i> Despesa
                         </label>
-
                     </div>
-
                 </div>
 
-
-                <!-- =============================================
-                     DESCRIÇÃO
-                     ============================================= -->
-
+                <!-- DESCRIÇÃO -->
                 <div class="mb-3">
-
                     <label class="form-label small fw-semibold text-secondary">
                         Descrição
                     </label>
-
                     <input
                         type="text"
                         name="descricao"
@@ -1049,26 +726,15 @@
                         maxlength="255"
                         required
                     >
-
                 </div>
 
-
-                <!-- =============================================
-                     VALOR
-                     ============================================= -->
-
+                <!-- VALOR -->
                 <div class="mb-3">
-
                     <label class="form-label small fw-semibold text-secondary">
                         Valor
                     </label>
-
                     <div class="input-group input-group-sm">
-
-                        <span class="input-group-text">
-                            R$
-                        </span>
-
+                        <span class="input-group-text">R$</span>
                         <input
                             type="number"
                             step="0.01"
@@ -1078,59 +744,33 @@
                             placeholder="0,00"
                             required
                         >
-
                     </div>
-
                 </div>
 
-
-                <!-- =============================================
-                     CATEGORIA
-                     ============================================= -->
-
+                <!-- CATEGORIA -->
                 <div class="mb-3">
-
                     <label class="form-label small fw-semibold text-secondary">
                         Categoria
                     </label>
-
                     <select
                         name="categoria_id"
                         class="form-select form-select-sm"
                         required
                     >
-
-                        <option
-                            value=""
-                            disabled
-                            selected
-                        >
+                        <option value="" disabled selected>
                             Selecione uma categoria
                         </option>
-
                         {% for cat in categorias %}
-
-                            <option value="{{ cat.id }}">
-                                {{ cat.nome }}
-                            </option>
-
+                            <option value="{{ cat.id }}">{{ cat.nome }}</option>
                         {% endfor %}
-
                     </select>
-
                 </div>
 
-
-                <!-- =============================================
-                     DATA
-                     ============================================= -->
-
+                <!-- DATA -->
                 <div class="mb-3">
-
                     <label class="form-label small fw-semibold text-secondary">
                         Data
                     </label>
-
                     <input
                         type="date"
                         name="data"
@@ -1138,202 +778,81 @@
                         class="form-control form-control-sm"
                         required
                     >
-
                 </div>
 
-
-                <!-- =============================================
-                     STATUS
-                     ============================================= -->
-
-                <div class="form-check mb-4">
-
-                    <input
-                        class="form-check-input"
-                        type="checkbox"
-                        name="status_pago"
-                        id="statusPago"
-                        value="Pago"
-                        checked
-                    >
-
-                    <label
-                        class="form-check-label small fw-semibold"
-                        for="statusPago"
-                    >
-                        Pago
+                <!-- STATUS -->
+                <div class="mb-4">
+                    <label class="form-label small fw-semibold text-secondary">
+                        Status
                     </label>
-
+                    <select
+                        name="status"
+                        class="form-select form-select-sm"
+                        required
+                    >
+                        <option value="Pago" selected>Pago</option>
+                        <option value="Pendente">Pendente</option>
+                    </select>
                 </div>
 
-
-                <!-- =============================================
-                     BOTÕES
-                     ============================================= -->
-
-                <div class="d-flex gap-2">
-
-                    <button
-                        type="button"
-                        class="btn btn-sm btn-light border w-50"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#panelNovoLancamento"
-                    >
-                        Cancelar
-                    </button>
-
-                    <button
-                        type="submit"
-                        class="btn btn-sm btn-dark w-50"
-                    >
-                        Salvar lançamento
-                    </button>
-
-                </div>
+                <button
+                    type="submit"
+                    class="btn btn-dark btn-sm w-100 fw-semibold"
+                >
+                    Salvar Lançamento
+                </button>
 
             </form>
 
         </div>
-
     </div>
 
 </div>
 
 {% endblock %}
 
-
 {% block scripts %}
-
 <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Preenche por padrão o campo de data com o dia de hoje
+        const today = new Date().toISOString().split('T')[0];
+        const formDate = document.getElementById('formDate');
+        const headerDate = document.getElementById('headerDate');
+        if (formDate && !formDate.value) formDate.value = today;
+        if (headerDate && !headerDate.value) headerDate.value = today;
 
-    /* =========================================================
-       ALTERNÂNCIA DE TIPO
-       ========================================================= */
+        // Alterna o estilo dinâmico dos seletores de tipo (Receita / Despesa)
+        const radioTipoReceita = document.getElementById('tipoReceita');
+        const radioTipoDespesa = document.getElementById('tipoDespesa');
+        const labelReceita = document.querySelector('label[for="tipoReceita"]');
+        const labelDespesa = document.querySelector('label[for="tipoDespesa"]');
 
-    document
-        .querySelectorAll('input[name="tipo"]')
-        .forEach((elem) => {
+        function updateTypeSelectors() {
+            if (radioTipoReceita.checked) {
+                labelReceita.classList.add('active-receita');
+                labelDespesa.classList.remove('active-despesa');
+            } else {
+                labelReceita.classList.remove('active-receita');
+                labelDespesa.classList.add('active-despesa');
+            }
+        }
 
-            elem.addEventListener("change", function() {
+        if (radioTipoReceita && radioTipoDespesa) {
+            radioTipoReceita.addEventListener('change', updateTypeSelectors);
+            radioTipoDespesa.addEventListener('change', updateTypeSelectors);
+        }
 
-                const labelReceita =
-                    document.querySelector(
-                        'label[for="tipoReceita"]'
-                    );
-
-                const labelDespesa =
-                    document.querySelector(
-                        'label[for="tipoDespesa"]'
-                    );
-
-
-                if (!labelReceita || !labelDespesa) {
-                    return;
-                }
-
-
-                if (this.value === "receita") {
-
-                    labelReceita.classList.add(
-                        "active-receita"
-                    );
-
-                    labelDespesa.classList.remove(
-                        "active-despesa"
-                    );
-
-                } else {
-
-                    labelDespesa.classList.add(
-                        "active-despesa"
-                    );
-
-                    labelReceita.classList.remove(
-                        "active-receita"
-                    );
-
-                }
-
-            });
-
-        });
-
-
-    /* =========================================================
-       DATA ATUAL
-       ========================================================= */
-
-    const today =
-        new Date()
-            .toISOString()
-            .split("T")[0];
-
-
-    const formDate =
-        document.getElementById("formDate");
-
-
-    const headerDate =
-        document.getElementById("headerDate");
-
-
-    if (formDate && !formDate.value) {
-
-        formDate.value = today;
-
-    }
-
-
-    if (headerDate) {
-
-        headerDate.value = today;
-
-    }
-
-
-    /* =========================================================
-       BOTÕES RÁPIDOS DE PERÍODO
-       ========================================================= */
-
-    document
-        .querySelectorAll(".btn-periodo")
-        .forEach((btn) => {
-
-            btn.addEventListener("click", function() {
-
-                const val =
-                    this.getAttribute("data-val");
-
-
-                const selectPeriodo =
-                    document.getElementById(
-                        "selectPeriodo"
-                    );
-
-
-                const filterForm =
-                    document.getElementById(
-                        "filterForm"
-                    );
-
-
+        // Botões de atalho rápido para período nos filtros
+        document.querySelectorAll('.btn-periodo').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const val = btn.getAttribute('data-val');
+                const selectPeriodo = document.getElementById('selectPeriodo');
                 if (selectPeriodo) {
-
                     selectPeriodo.value = val;
-
+                    document.getElementById('filterForm').submit();
                 }
-
-
-                if (filterForm) {
-
-                    filterForm.submit();
-
-                }
-
             });
-
         });
-
+    });
 </script>
-
 {% endblock %}
