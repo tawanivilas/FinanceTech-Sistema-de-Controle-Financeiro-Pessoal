@@ -28,13 +28,8 @@ CREATE TABLE transacoes (
     descricao VARCHAR(255),
     valor DECIMAL(10, 2) NOT NULL,
     tipo ENUM('receita', 'despesa') NOT NULL,
-    subtipo_despesa VARCHAR(50) NULL,
-    parcela_atual INT NULL,
-    total_parcelas INT NULL,
     data DATE NULL,
-    data_transacao DATE NOT NULL,
-    data_termino DATE NULL,
-    pago TINYINT(1) DEFAULT 0,
+    status VARCHAR(20) DEFAULT 'Pago',
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
     FOREIGN KEY (categoria_id) REFERENCES categorias(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -42,11 +37,13 @@ CREATE TABLE transacoes (
 CREATE TABLE metas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
-    nome VARCHAR(100) NOT NULL,
-    valor_meta DECIMAL(10, 2) NOT NULL,
+    categoria_id INT NULL,
+    titulo VARCHAR(100) NOT NULL,
+    valor_alvo DECIMAL(10, 2) NOT NULL,
     valor_atual DECIMAL(10, 2) DEFAULT 0.00,
-    prazo DATE NULL,
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+    data_limite DATE NULL,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (categoria_id) REFERENCES categorias(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 INSERT INTO categorias (nome, tipo, usuario_id) VALUES

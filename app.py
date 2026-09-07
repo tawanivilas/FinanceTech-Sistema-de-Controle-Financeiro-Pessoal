@@ -54,6 +54,26 @@ else:
 
 
 # =========================================================
+# NOMES DOS MESES EM PORTUGUÊS
+# =========================================================
+
+MESES_PT = {
+    1: "Janeiro",
+    2: "Fevereiro",
+    3: "Março",
+    4: "Abril",
+    5: "Maio",
+    6: "Junho",
+    7: "Julho",
+    8: "Agosto",
+    9: "Setembro",
+    10: "Outubro",
+    11: "Novembro",
+    12: "Dezembro"
+}
+
+
+# =========================================================
 # CONEXÃO COM O BANCO DE DADOS
 # =========================================================
 
@@ -574,14 +594,56 @@ def dashboard():
 
     hoje = date.today()
 
-    primeiro_dia = hoje.replace(
-        day=1
+    mes_param = request.args.get(
+        "mes"
     )
+
+    if mes_param:
+
+        try:
+
+            ano_sel, mes_sel = mes_param.split("-")
+
+            primeiro_dia = date(
+                int(ano_sel),
+                int(mes_sel),
+                1
+            )
+
+        except (ValueError, TypeError):
+
+            primeiro_dia = hoje.replace(
+                day=1
+            )
+
+    else:
+
+        primeiro_dia = hoje.replace(
+            day=1
+        )
 
     ultimo_dia = (
         primeiro_dia
         + relativedelta(months=1)
     )
+
+    mes_atual = primeiro_dia.strftime(
+        "%Y-%m"
+    )
+
+    meses = []
+
+    for i in range(12):
+
+        data_ref = (
+            hoje.replace(day=1)
+            - relativedelta(months=i)
+        )
+
+        meses.append({
+            "valor": data_ref.strftime("%Y-%m"),
+            "nome": f"{MESES_PT[data_ref.month]} de {data_ref.year}"
+        })
 
     conexao = None
     cursor = None
@@ -621,8 +683,8 @@ def dashboard():
 
         transacoes = cursor.fetchall()
 
-        receitas = 0
-        despesas = 0
+        total_receitas = 0
+        total_despesas = 0
 
         for transacao in transacoes:
 
@@ -640,13 +702,13 @@ def dashboard():
                 "income"
             ]:
 
-                receitas += valor
+                total_receitas += valor
 
             else:
 
-                despesas += valor
+                total_despesas += valor
 
-        saldo = receitas - despesas
+        saldo_mes = total_receitas - total_despesas
 
         cursor.execute(
             """
@@ -677,13 +739,20 @@ def dashboard():
             cursor.fetchall()
         )
 
+        despesas_cat_mes = {
+            (linha["categoria"] or "Sem categoria"): float(linha["total"] or 0)
+            for linha in despesas_categoria
+        }
+
         return render_template(
             "dashboard.html",
             transacoes=transacoes,
-            receitas=receitas,
-            despesas=despesas,
-            saldo=saldo,
-            despesas_categoria=despesas_categoria
+            total_receitas=total_receitas,
+            total_despesas=total_despesas,
+            saldo_mes=saldo_mes,
+            despesas_cat_mes=despesas_cat_mes,
+            meses=meses,
+            mes_atual=mes_atual
         )
 
     except Error:
@@ -700,10 +769,12 @@ def dashboard():
         return render_template(
             "dashboard.html",
             transacoes=[],
-            receitas=0,
-            despesas=0,
-            saldo=0,
-            despesas_categoria=[]
+            total_receitas=0,
+            total_despesas=0,
+            saldo_mes=0,
+            despesas_cat_mes={},
+            meses=meses,
+            mes_atual=mes_atual
         )
 
     except Exception:
@@ -720,10 +791,12 @@ def dashboard():
         return render_template(
             "dashboard.html",
             transacoes=[],
-            receitas=0,
-            despesas=0,
-            saldo=0,
-            despesas_categoria=[]
+            total_receitas=0,
+            total_despesas=0,
+            saldo_mes=0,
+            despesas_cat_mes={},
+            meses=meses,
+            mes_atual=mes_atual
         )
 
     finally:
@@ -1255,14 +1328,14 @@ def nova_transacao():
 # =========================================================
 
 @app.route(
-    "/editar-transacao/<int:id>",
+    "/editar-transacao/<int:transacao_id>",
     methods=["GET", "POST"]
 )
 @app.route(
-    "/editar-lancamento/<int:id>",
+    "/editar-lancamento/<int:transacao_id>",
     methods=["GET", "POST"]
 )
-def editar_transacao(id):
+def editar_transacao(transacao_id):
 
     if "usuario_id" not in session:
 
@@ -1293,7 +1366,7 @@ def editar_transacao(id):
             LIMIT 1
             """,
             (
-                id,
+                transacao_id,
                 usuario_id
             )
         )
@@ -1377,7 +1450,7 @@ def editar_transacao(id):
             return redirect(
                 url_for(
                     "editar_transacao",
-                    id=id
+                    transacao_id=transacao_id
                 )
             )
 
@@ -1394,7 +1467,7 @@ def editar_transacao(id):
             return redirect(
                 url_for(
                     "editar_transacao",
-                    id=id
+                    transacao_id=transacao_id
                 )
             )
 
@@ -1408,7 +1481,7 @@ def editar_transacao(id):
             return redirect(
                 url_for(
                     "editar_transacao",
-                    id=id
+                    transacao_id=transacao_id
                 )
             )
 
@@ -1431,7 +1504,7 @@ def editar_transacao(id):
                 return redirect(
                     url_for(
                         "editar_transacao",
-                        id=id
+                        transacao_id=transacao_id
                     )
                 )
 
@@ -1477,7 +1550,7 @@ def editar_transacao(id):
                 data_transacao,
                 categoria_id,
                 status,
-                id,
+                transacao_id,
                 usuario_id
             )
         )
@@ -1542,14 +1615,14 @@ def editar_transacao(id):
 # =========================================================
 
 @app.route(
-    "/excluir-transacao/<int:id>",
+    "/excluir-transacao/<int:transacao_id>",
     methods=["GET", "POST"]
 )
 @app.route(
-    "/excluir-lancamento/<int:id>",
+    "/excluir-lancamento/<int:transacao_id>",
     methods=["GET", "POST"]
 )
-def excluir_transacao(id):
+def excluir_transacao(transacao_id):
 
     if "usuario_id" not in session:
 
@@ -1575,7 +1648,7 @@ def excluir_transacao(id):
               AND usuario_id = %s
             """,
             (
-                id,
+                transacao_id,
                 usuario_id
             )
         )
