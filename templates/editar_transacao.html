@@ -406,7 +406,7 @@ FinanceTech - Editar lançamento
                     id="data"
                     name="data"
                     class="form-control"
-                    value="{% if transacao.data %}{{ transacao.data.strftime('%Y-%m-%d') }}{% endif %}"
+                    value="{% if transacao.data %}{{ transacao.data.strftime('%Y-%m-%d') if transacao.data.strftime else transacao.data }}{% endif %}"
                     required
                 >
 
@@ -421,13 +421,16 @@ FinanceTech - Editar lançamento
 
                     <div class="form-check m-0">
 
+                        <!-- Campo hidden garante o envio de 'Pendente' se desmarcado -->
+                        <input type="hidden" name="status" value="Pendente">
+
                         <input
                             type="checkbox"
                             class="form-check-input"
                             id="statusPago"
-                            name="status_pago"
+                            name="status"
                             value="Pago"
-                            {% if transacao.pago or transacao.status == 'Pago' %}
+                            {% if transacao.status == 'Pago' or transacao.pago %}
                                 checked
                             {% endif %}
                         >
