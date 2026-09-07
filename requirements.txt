@@ -3,3 +3,5 @@ gunicorn
 mysql-connector-python
 Werkzeug
 python-dateutil
+python-dotenv
+gunicorn
