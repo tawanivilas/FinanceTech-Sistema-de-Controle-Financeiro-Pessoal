@@ -1,0 +1,1339 @@
+{% extends 'base.html' %}
+
+{% block title %}FinanceTech - Lançamentos{% endblock %}
+
+{% block styles %}
+
+<style>
+
+    /* =========================================================
+       CARDS
+       ========================================================= */
+
+    .filter-card,
+    .main-card,
+    .side-form-card {
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 20px;
+        color: #1f2937;
+        border: 1px solid #e5e7eb;
+    }
+
+
+    /* =========================================================
+       BADGES DE CATEGORIA
+       ========================================================= */
+
+    .badge-cat {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .badge-trabalho {
+        background-color: #fef9c3;
+        color: #854d0e;
+    }
+
+    .badge-alimentacao {
+        background-color: #ffedd5;
+        color: #c2410c;
+    }
+
+    .badge-casa {
+        background-color: #dbeafe;
+        color: #1e40af;
+    }
+
+    .badge-transporte {
+        background-color: #f3e8ff;
+        color: #6b21a8;
+    }
+
+    .badge-outros {
+        background-color: #f3f4f6;
+        color: #374151;
+    }
+
+    .badge-lazer {
+        background-color: #dcfce7;
+        color: #166534;
+    }
+
+    .badge-saude {
+        background-color: #ffe4e6;
+        color: #9f1239;
+    }
+
+
+    /* =========================================================
+       BADGES DE TIPO
+       ========================================================= */
+
+    .badge-tipo-receita {
+        background-color: #dcfce7;
+        color: #15803d;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+    .badge-tipo-despesa {
+        background-color: #fee2e2;
+        color: #b91c1c;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+
+    /* =========================================================
+       BADGES DE STATUS
+       ========================================================= */
+
+    .badge-pago {
+        background-color: #dcfce7;
+        color: #166534;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.75rem;
+    }
+
+    .badge-pendente {
+        background-color: #fef9c3;
+        color: #854d0e;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.75rem;
+    }
+
+
+    /* =========================================================
+       TABELA
+       ========================================================= */
+
+    .table-lancamentos th {
+        color: #6b7280;
+        font-weight: 600;
+        font-size: 0.85rem;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 12px;
+        white-space: nowrap;
+    }
+
+    .table-lancamentos td {
+        padding: 14px 0;
+        border-bottom: 1px solid #f3f4f6;
+        vertical-align: middle;
+        font-size: 0.9rem;
+    }
+
+    .table-lancamentos tbody tr {
+        transition: background-color 0.15s ease;
+    }
+
+    .table-lancamentos tbody tr:hover {
+        background-color: #fafafa;
+    }
+
+
+    /* =========================================================
+       SELEÇÃO RECEITA / DESPESA
+       ========================================================= */
+
+    .btn-type-selector {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 8px;
+        text-align: center;
+        width: 100%;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: block;
+    }
+
+    .btn-type-selector:hover {
+        background-color: #f9fafb;
+    }
+
+    .btn-type-selector.active-receita {
+        border-color: #22c55e !important;
+        background-color: #f0fdf4 !important;
+        color: #15803d !important;
+    }
+
+    .btn-type-selector.active-despesa {
+        border-color: #ef4444 !important;
+        background-color: #fef2f2 !important;
+        color: #b91c1c !important;
+    }
+
+
+    /* =========================================================
+       BOTÕES DE AÇÃO DA TABELA
+       ========================================================= */
+
+    .btn-acao {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 7px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .btn-editar {
+        color: #6b7280;
+    }
+
+    .btn-editar:hover {
+        background-color: #f3f4f6;
+        color: #111827;
+    }
+
+    .btn-excluir {
+        color: #6b7280;
+    }
+
+    .btn-excluir:hover {
+        background-color: #fef2f2;
+        color: #dc2626;
+    }
+
+
+    /* =========================================================
+       BOTÃO EXPORTAR
+       ========================================================= */
+
+    .btn-exportar {
+        transition: all 0.2s ease;
+    }
+
+    .btn-exportar:hover {
+        background-color: #f3f4f6;
+    }
+
+
+    /* =========================================================
+       FORMULÁRIOS
+       ========================================================= */
+
+    .form-control,
+    .form-select {
+        border-color: #e5e7eb;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #9ca3af;
+        box-shadow: 0 0 0 0.15rem rgba(107, 114, 128, 0.15);
+    }
+
+
+    /* =========================================================
+       RESPONSIVIDADE
+       ========================================================= */
+
+    @media (max-width: 992px) {
+
+        .table-lancamentos {
+            min-width: 850px;
+        }
+
+    }
+
+
+    @media (max-width: 768px) {
+
+        .filter-card,
+        .main-card,
+        .side-form-card {
+            padding: 15px;
+        }
+
+    }
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<!-- =========================================================
+     CABEÇALHO
+     ========================================================= -->
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+    <div>
+
+        <h3 class="fw-bold m-0 text-dark fs-4">
+            Lançamentos
+        </h3>
+
+        <p class="text-muted small m-0">
+            Gerencie todas as suas receitas e despesas.
+        </p>
+
+    </div>
+
+
+    <div class="d-flex align-items-center gap-3">
+
+        <i
+            class="fa-regular fa-bell text-secondary fs-5"
+            style="cursor: pointer;"
+        ></i>
+
+        <input
+            type="date"
+            id="headerDate"
+            class="form-control form-control-sm border-0 shadow-sm"
+            style="width: auto;"
+        >
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     BARRA DE FILTROS
+     ========================================================= -->
+
+<div class="filter-card shadow-sm mb-4">
+
+    <form
+        method="GET"
+        action="{{ url_for('lancamentos') }}"
+        id="filterForm"
+    >
+
+        <div class="row g-2 mb-3">
+
+
+            <!-- =================================================
+                 PERÍODO
+                 ================================================= -->
+
+            <div class="col-md-3">
+
+                <label class="form-label small fw-semibold text-secondary">
+                    Período
+                </label>
+
+                <select
+                    name="periodo"
+                    id="selectPeriodo"
+                    class="form-select form-select-sm"
+                >
+
+                    <option
+                        value="este_mes"
+                        {% if request.args.get('periodo', 'este_mes') == 'este_mes' %}
+                            selected
+                        {% endif %}
+                    >
+                        Este mês
+                    </option>
+
+                    <option
+                        value="hoje"
+                        {% if request.args.get('periodo') == 'hoje' %}
+                            selected
+                        {% endif %}
+                    >
+                        Hoje
+                    </option>
+
+                    <option
+                        value="7_dias"
+                        {% if request.args.get('periodo') == '7_dias' %}
+                            selected
+                        {% endif %}
+                    >
+                        7 dias
+                    </option>
+
+                    <option
+                        value="mes_passado"
+                        {% if request.args.get('periodo') == 'mes_passado' %}
+                            selected
+                        {% endif %}
+                    >
+                        Mês passado
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- =================================================
+                 TIPO
+                 ================================================= -->
+
+            <div class="col-md-3">
+
+                <label class="form-label small fw-semibold text-secondary">
+                    Tipo
+                </label>
+
+                <select
+                    name="tipo"
+                    class="form-select form-select-sm"
+                >
+
+                    <option value="">
+                        Todos
+                    </option>
+
+                    <option
+                        value="receita"
+                        {% if request.args.get('tipo') == 'receita' %}
+                            selected
+                        {% endif %}
+                    >
+                        Receita
+                    </option>
+
+                    <option
+                        value="despesa"
+                        {% if request.args.get('tipo') == 'despesa' %}
+                            selected
+                        {% endif %}
+                    >
+                        Despesa
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- =================================================
+                 CATEGORIA
+                 ================================================= -->
+
+            <div class="col-md-3">
+
+                <label class="form-label small fw-semibold text-secondary">
+                    Categoria
+                </label>
+
+                <select
+                    name="categoria_id"
+                    class="form-select form-select-sm"
+                >
+
+                    <option value="">
+                        Todas
+                    </option>
+
+                    {% for cat in categorias %}
+
+                        <option
+                            value="{{ cat.id }}"
+                            {% if request.args.get('categoria_id')|int == cat.id %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ cat.nome }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- =================================================
+                 STATUS
+                 ================================================= -->
+
+            <div class="col-md-3">
+
+                <label class="form-label small fw-semibold text-secondary">
+                    Status
+                </label>
+
+                <select
+                    name="status"
+                    class="form-select form-select-sm"
+                >
+
+                    <option value="">
+                        Todos
+                    </option>
+
+                    <option
+                        value="Pago"
+                        {% if request.args.get('status') == 'Pago' %}
+                            selected
+                        {% endif %}
+                    >
+                        Pago
+                    </option>
+
+                    <option
+                        value="Pendente"
+                        {% if request.args.get('status') == 'Pendente' %}
+                            selected
+                        {% endif %}
+                    >
+                        Pendente
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             BOTÕES DE PERÍODO
+             ================================================= -->
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+
+
+            <div class="d-flex gap-1 flex-wrap">
+
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary btn-periodo"
+                    data-val="hoje"
+                >
+                    Hoje
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary btn-periodo"
+                    data-val="7_dias"
+                >
+                    7 dias
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary btn-periodo"
+                    data-val="este_mes"
+                >
+                    Este mês
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary btn-periodo"
+                    data-val="mes_passado"
+                >
+                    Mês passado
+                </button>
+
+            </div>
+
+
+            <!-- FILTRAR / LIMPAR -->
+
+            <div class="d-flex gap-2">
+
+                <button
+                    type="submit"
+                    class="btn btn-sm btn-dark px-3"
+                >
+                    <i class="fa-solid fa-filter"></i>
+                    Filtrar
+                </button>
+
+                <a
+                    href="{{ url_for('lancamentos') }}"
+                    class="btn btn-sm btn-light border"
+                >
+                    Limpar filtros
+                </a>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<!-- =========================================================
+     CONTEÚDO PRINCIPAL
+     ========================================================= -->
+
+<div class="row g-4">
+
+
+    <!-- =====================================================
+         TABELA DE LANÇAMENTOS
+         ===================================================== -->
+
+    <div class="col-lg-8">
+
+        <div class="main-card shadow-sm">
+
+
+            <!-- CABEÇALHO DA TABELA -->
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+
+                <div class="d-flex align-items-center gap-2">
+
+                    <h5 class="fw-bold m-0 fs-6">
+                        Todos os lançamentos
+                    </h5>
+
+                    <span class="badge bg-light text-dark border rounded-pill">
+                        {{ lancamentos|length if lancamentos else 0 }}
+                    </span>
+
+                </div>
+
+
+                <div class="d-flex gap-2">
+
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-light border btn-exportar"
+                    >
+                        <i class="fa-solid fa-download"></i>
+                        Exportar
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-dark"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#panelNovoLancamento"
+                    >
+                        + Novo lançamento
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 TABELA
+                 ================================================= -->
+
+            <div class="table-responsive">
+
+                <table class="table table-borderless table-lancamentos m-0">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Data
+                            </th>
+
+                            <th>
+                                Descrição
+                            </th>
+
+                            <th>
+                                Categoria
+                            </th>
+
+                            <th>
+                                Tipo
+                            </th>
+
+                            <th>
+                                Valor
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th class="text-end">
+                                Ações
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% if lancamentos %}
+
+                            {% for item in lancamentos %}
+
+                                <tr>
+
+
+                                    <!-- =================================
+                                         DATA
+                                         ================================= -->
+
+                                    <td class="text-secondary">
+
+                                        {% if item.data %}
+
+                                            {% if item.data.strftime %}
+
+                                                {{ item.data.strftime('%d/%m/%Y') }}
+
+                                            {% else %}
+
+                                                {{ item.data }}
+
+                                            {% endif %}
+
+                                        {% else %}
+
+                                            -
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <!-- =================================
+                                         DESCRIÇÃO
+                                         ================================= -->
+
+                                    <td class="fw-semibold text-dark">
+
+                                        {{ item.descricao or 'Sem descrição' }}
+
+                                    </td>
+
+
+                                    <!-- =================================
+                                         CATEGORIA
+                                         ================================= -->
+
+                                    <td>
+
+                                        {% set cat_slug = (
+                                            item.categoria_nome
+                                            |lower
+                                            |replace('á','a')
+                                            |replace('à','a')
+                                            |replace('ã','a')
+                                            |replace('â','a')
+                                            |replace('é','e')
+                                            |replace('ê','e')
+                                            |replace('í','i')
+                                            |replace('ó','o')
+                                            |replace('ô','o')
+                                            |replace('õ','o')
+                                            |replace('ú','u')
+                                            |replace('ç','c')
+                                            |replace(' ','-')
+                                        ) if item.categoria_nome else 'outros' %}
+
+
+                                        <span class="badge-cat badge-{{ cat_slug }}">
+
+                                            <i class="fa-solid fa-tag"></i>
+
+                                            {{ item.categoria_nome if item.categoria_nome else 'Sem Categoria' }}
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <!-- =================================
+                                         TIPO
+                                         ================================= -->
+
+                                    <td>
+
+                                        {% if item.tipo == 'receita' %}
+
+                                            <span class="badge-tipo-receita">
+                                                Receita
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="badge-tipo-despesa">
+                                                Despesa
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <!-- =================================
+                                         VALOR
+                                         ================================= -->
+
+                                    <td
+                                        class="fw-bold
+                                        {% if item.tipo == 'receita' %}
+                                            text-success
+                                        {% else %}
+                                            text-danger
+                                        {% endif %}"
+                                    >
+
+                                        {% if item.tipo == 'receita' %}
+
+                                            +R$ {{ "%.2f"|format(item.valor|float) }}
+
+                                        {% else %}
+
+                                            -R$ {{ "%.2f"|format(item.valor|float) }}
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <!-- =================================
+                                         STATUS
+                                         ================================= -->
+
+                                    <td>
+
+                                        <span
+                                            class="{% if item.status == 'Pago' %}badge-pago{% else %}badge-pendente{% endif %}"
+                                        >
+
+                                            {{ item.status }}
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <!-- =================================
+                                         AÇÕES
+                                         ================================= -->
+
+                                    <td class="text-end">
+
+
+                                        <!-- =============================
+                                             EDITAR
+                                             GET
+                                             ============================= -->
+
+                                        <a
+                                            href="{{ url_for('editar_transacao', id=item.id) }}"
+                                            class="btn-acao btn-editar"
+                                            title="Editar lançamento"
+                                        >
+
+                                            <i class="fa-regular fa-pen-to-square"></i>
+
+                                        </a>
+
+
+                                        <!-- =============================
+                                             EXCLUIR
+                                             POST
+                                             ============================= -->
+
+                                        <form
+                                            action="{{ url_for('excluir_transacao', id=item.id) }}"
+                                            method="POST"
+                                            class="d-inline"
+                                            onsubmit="return confirm('Tem certeza que deseja excluir este lançamento?');"
+                                        >
+
+                                            <button
+                                                type="submit"
+                                                class="btn-acao btn-excluir"
+                                                title="Excluir lançamento"
+                                            >
+
+                                                <i class="fa-regular fa-trash-can"></i>
+
+                                            </button>
+
+                                        </form>
+
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+
+                        {% else %}
+
+
+                            <!-- =========================================
+                                 SEM LANÇAMENTOS
+                                 ========================================= -->
+
+                            <tr>
+
+                                <td
+                                    colspan="7"
+                                    class="text-center py-4 text-muted"
+                                >
+
+                                    <i
+                                        class="fa-regular fa-folder-open mb-2 fs-4 d-block"
+                                    ></i>
+
+                                    Nenhum lançamento encontrado.
+
+                                </td>
+
+                            </tr>
+
+
+                        {% endif %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         PAINEL LATERAL - NOVO LANÇAMENTO
+         ===================================================== -->
+
+    <div
+        class="col-lg-4 collapse show"
+        id="panelNovoLancamento"
+    >
+
+        <div class="side-form-card shadow-sm">
+
+
+            <!-- CABEÇALHO -->
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+
+                <h5 class="fw-bold m-0 fs-6">
+                    Novo lançamento
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#panelNovoLancamento"
+                    aria-label="Fechar"
+                ></button>
+
+            </div>
+
+
+            <!-- =================================================
+                 FORMULÁRIO NOVO LANÇAMENTO
+                 ================================================= -->
+
+            <form
+                action="{{ url_for('nova_transacao') }}"
+                method="POST"
+            >
+
+
+                <!-- =============================================
+                     TIPO
+                     ============================================= -->
+
+                <div class="mb-3">
+
+                    <label class="form-label small fw-semibold text-secondary">
+                        Tipo
+                    </label>
+
+
+                    <div class="d-flex gap-2">
+
+
+                        <!-- RECEITA -->
+
+                        <input
+                            type="radio"
+                            class="btn-check"
+                            name="tipo"
+                            id="tipoReceita"
+                            value="receita"
+                            checked
+                        >
+
+                        <label
+                            class="btn-type-selector active-receita"
+                            for="tipoReceita"
+                        >
+
+                            <i class="fa-solid fa-arrow-up"></i>
+
+                            Receita
+
+                        </label>
+
+
+                        <!-- DESPESA -->
+
+                        <input
+                            type="radio"
+                            class="btn-check"
+                            name="tipo"
+                            id="tipoDespesa"
+                            value="despesa"
+                        >
+
+                        <label
+                            class="btn-type-selector"
+                            for="tipoDespesa"
+                        >
+
+                            <i class="fa-solid fa-arrow-down"></i>
+
+                            Despesa
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =============================================
+                     DESCRIÇÃO
+                     ============================================= -->
+
+                <div class="mb-3">
+
+                    <label class="form-label small fw-semibold text-secondary">
+                        Descrição
+                    </label>
+
+                    <input
+                        type="text"
+                        name="descricao"
+                        class="form-control form-control-sm"
+                        placeholder="Ex: Conta de luz"
+                        maxlength="255"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- =============================================
+                     VALOR
+                     ============================================= -->
+
+                <div class="mb-3">
+
+                    <label class="form-label small fw-semibold text-secondary">
+                        Valor
+                    </label>
+
+                    <div class="input-group input-group-sm">
+
+                        <span class="input-group-text">
+                            R$
+                        </span>
+
+                        <input
+                            type="number"
+                            step="0.01"
+                            min="0.01"
+                            name="valor"
+                            class="form-control"
+                            placeholder="0,00"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- =============================================
+                     CATEGORIA
+                     ============================================= -->
+
+                <div class="mb-3">
+
+                    <label class="form-label small fw-semibold text-secondary">
+                        Categoria
+                    </label>
+
+                    <select
+                        name="categoria_id"
+                        class="form-select form-select-sm"
+                        required
+                    >
+
+                        <option
+                            value=""
+                            disabled
+                            selected
+                        >
+                            Selecione uma categoria
+                        </option>
+
+                        {% for cat in categorias %}
+
+                            <option value="{{ cat.id }}">
+                                {{ cat.nome }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- =============================================
+                     DATA
+                     ============================================= -->
+
+                <div class="mb-3">
+
+                    <label class="form-label small fw-semibold text-secondary">
+                        Data
+                    </label>
+
+                    <input
+                        type="date"
+                        name="data"
+                        id="formDate"
+                        class="form-control form-control-sm"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- =============================================
+                     STATUS
+                     ============================================= -->
+
+                <div class="form-check mb-4">
+
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        name="status_pago"
+                        id="statusPago"
+                        value="Pago"
+                        checked
+                    >
+
+                    <label
+                        class="form-check-label small fw-semibold"
+                        for="statusPago"
+                    >
+                        Pago
+                    </label>
+
+                </div>
+
+
+                <!-- =============================================
+                     BOTÕES
+                     ============================================= -->
+
+                <div class="d-flex gap-2">
+
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-light border w-50"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#panelNovoLancamento"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-sm btn-dark w-50"
+                    >
+                        Salvar lançamento
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+
+    /* =========================================================
+       ALTERNÂNCIA DE TIPO
+       ========================================================= */
+
+    document
+        .querySelectorAll('input[name="tipo"]')
+        .forEach((elem) => {
+
+            elem.addEventListener("change", function() {
+
+                const labelReceita =
+                    document.querySelector(
+                        'label[for="tipoReceita"]'
+                    );
+
+                const labelDespesa =
+                    document.querySelector(
+                        'label[for="tipoDespesa"]'
+                    );
+
+
+                if (!labelReceita || !labelDespesa) {
+                    return;
+                }
+
+
+                if (this.value === "receita") {
+
+                    labelReceita.classList.add(
+                        "active-receita"
+                    );
+
+                    labelDespesa.classList.remove(
+                        "active-despesa"
+                    );
+
+                } else {
+
+                    labelDespesa.classList.add(
+                        "active-despesa"
+                    );
+
+                    labelReceita.classList.remove(
+                        "active-receita"
+                    );
+
+                }
+
+            });
+
+        });
+
+
+    /* =========================================================
+       DATA ATUAL
+       ========================================================= */
+
+    const today =
+        new Date()
+            .toISOString()
+            .split("T")[0];
+
+
+    const formDate =
+        document.getElementById("formDate");
+
+
+    const headerDate =
+        document.getElementById("headerDate");
+
+
+    if (formDate && !formDate.value) {
+
+        formDate.value = today;
+
+    }
+
+
+    if (headerDate) {
+
+        headerDate.value = today;
+
+    }
+
+
+    /* =========================================================
+       BOTÕES RÁPIDOS DE PERÍODO
+       ========================================================= */
+
+    document
+        .querySelectorAll(".btn-periodo")
+        .forEach((btn) => {
+
+            btn.addEventListener("click", function() {
+
+                const val =
+                    this.getAttribute("data-val");
+
+
+                const selectPeriodo =
+                    document.getElementById(
+                        "selectPeriodo"
+                    );
+
+
+                const filterForm =
+                    document.getElementById(
+                        "filterForm"
+                    );
+
+
+                if (selectPeriodo) {
+
+                    selectPeriodo.value = val;
+
+                }
+
+
+                if (filterForm) {
+
+                    filterForm.submit();
+
+                }
+
+            });
+
+        });
+
+</script>
+
+{% endblock %}

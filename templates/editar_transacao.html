@@ -1,0 +1,488 @@
+{% extends "base.html" %}
+
+{% block title %}
+FinanceTech - Editar lançamento
+{% endblock %}
+
+{% block content %}
+
+<style>
+
+    .edit-page {
+        padding: 20px;
+    }
+
+    .edit-header {
+        max-width: 760px;
+        margin: 0 auto 20px auto;
+    }
+
+    .edit-card {
+        max-width: 760px;
+        margin: 0 auto;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .edit-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 5px;
+    }
+
+    .edit-subtitle {
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .form-label-custom {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 7px;
+    }
+
+    .form-control,
+    .form-select {
+        border-radius: 10px;
+        min-height: 44px;
+        border: 1px solid #d1d5db;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #6b7280;
+        box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.10);
+    }
+
+    .tipo-container {
+        display: flex;
+        gap: 12px;
+    }
+
+    .tipo-option {
+        flex: 1;
+    }
+
+    .tipo-option input {
+        display: none;
+    }
+
+    .tipo-label {
+        width: 100%;
+        padding: 13px;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        text-align: center;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: 0.2s;
+        color: #64748b;
+        background: #ffffff;
+    }
+
+    .tipo-label:hover {
+        border-color: #cbd5e1;
+        background: #f8fafc;
+    }
+
+    .tipo-option input:checked + .receita-label {
+        background: #f0fdf4;
+        border-color: #22c55e;
+        color: #15803d;
+    }
+
+    .tipo-option input:checked + .despesa-label {
+        background: #fef2f2;
+        border-color: #ef4444;
+        color: #b91c1c;
+    }
+
+    .status-box {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 13px 15px;
+    }
+
+    .status-box label {
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .acoes-form {
+        display: flex;
+        gap: 12px;
+        margin-top: 25px;
+    }
+
+    .btn-cancelar,
+    .btn-salvar {
+        flex: 1;
+        min-height: 45px;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        transition: 0.2s;
+    }
+
+    .btn-cancelar {
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+        color: #374151;
+    }
+
+    .btn-cancelar:hover {
+        background: #f9fafb;
+        color: #111827;
+    }
+
+    .btn-salvar {
+        background: #111827;
+        border: 1px solid #111827;
+        color: #ffffff;
+    }
+
+    .btn-salvar:hover {
+        background: #374151;
+        border-color: #374151;
+        color: #ffffff;
+    }
+
+    @media (max-width: 576px) {
+
+        .edit-page {
+            padding: 12px;
+        }
+
+        .edit-card {
+            padding: 20px;
+        }
+
+        .tipo-container {
+            flex-direction: column;
+        }
+
+        .acoes-form {
+            flex-direction: column;
+        }
+    }
+
+</style>
+
+
+<div class="edit-page">
+
+    <!-- CABEÇALHO -->
+
+    <div class="edit-header">
+
+        <div class="d-flex justify-content-between align-items-center">
+
+            <div>
+
+                <div class="edit-title">
+                    Editar lançamento
+                </div>
+
+                <div class="edit-subtitle">
+                    Altere as informações do seu lançamento.
+                </div>
+
+            </div>
+
+            <a
+                href="{{ url_for('lancamentos') }}"
+                class="btn btn-light border"
+            >
+                <i class="fa-solid fa-arrow-left"></i>
+                Voltar
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- CARD -->
+
+    <div class="edit-card">
+
+        <form
+            action="{{ url_for('editar_transacao', id=transacao.id) }}"
+            method="POST"
+        >
+
+            <!-- TIPO -->
+
+            <div class="mb-4">
+
+                <label class="form-label-custom">
+                    Tipo de lançamento
+                </label>
+
+                <div class="tipo-container">
+
+                    <div class="tipo-option">
+
+                        <input
+                            type="radio"
+                            name="tipo"
+                            id="tipoReceita"
+                            value="receita"
+                            {% if transacao.tipo == "receita" %}
+                                checked
+                            {% endif %}
+                        >
+
+                        <label
+                            for="tipoReceita"
+                            class="tipo-label receita-label"
+                        >
+
+                            <i class="fa-solid fa-arrow-up me-1"></i>
+
+                            Receita
+
+                        </label>
+
+                    </div>
+
+
+                    <div class="tipo-option">
+
+                        <input
+                            type="radio"
+                            name="tipo"
+                            id="tipoDespesa"
+                            value="despesa"
+                            {% if transacao.tipo == "despesa" %}
+                                checked
+                            {% endif %}
+                        >
+
+                        <label
+                            for="tipoDespesa"
+                            class="tipo-label despesa-label"
+                        >
+
+                            <i class="fa-solid fa-arrow-down me-1"></i>
+
+                            Despesa
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- DESCRIÇÃO -->
+
+            <div class="mb-4">
+
+                <label
+                    for="descricao"
+                    class="form-label-custom"
+                >
+                    Descrição
+                </label>
+
+                <input
+                    type="text"
+                    id="descricao"
+                    name="descricao"
+                    class="form-control"
+                    value="{{ transacao.descricao or '' }}"
+                    placeholder="Ex: Conta de luz"
+                    required
+                >
+
+            </div>
+
+
+            <!-- VALOR -->
+
+            <div class="mb-4">
+
+                <label
+                    for="valor"
+                    class="form-label-custom"
+                >
+                    Valor
+                </label>
+
+                <div class="input-group">
+
+                    <span class="input-group-text">
+                        R$
+                    </span>
+
+                    <input
+                        type="number"
+                        id="valor"
+                        name="valor"
+                        class="form-control"
+                        min="0.01"
+                        step="0.01"
+                        value="{{ '%.2f'|format(transacao.valor|float) }}"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- CATEGORIA -->
+
+            <div class="mb-4">
+
+                <label
+                    for="categoria_id"
+                    class="form-label-custom"
+                >
+                    Categoria
+                </label>
+
+                <select
+                    id="categoria_id"
+                    name="categoria_id"
+                    class="form-select"
+                    required
+                >
+
+                    <option value="">
+                        Selecione uma categoria
+                    </option>
+
+                    {% for categoria in categorias %}
+
+                        <option
+                            value="{{ categoria.id }}"
+                            {% if transacao.categoria_id == categoria.id %}
+                                selected
+                            {% endif %}
+                        >
+
+                            {{ categoria.nome }}
+
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- DATA -->
+
+            <div class="mb-4">
+
+                <label
+                    for="data"
+                    class="form-label-custom"
+                >
+                    Data
+                </label>
+
+                <input
+                    type="date"
+                    id="data"
+                    name="data"
+                    class="form-control"
+                    value="{% if transacao.data %}{{ transacao.data.strftime('%Y-%m-%d') }}{% endif %}"
+                    required
+                >
+
+            </div>
+
+
+            <!-- STATUS -->
+
+            <div class="mb-4">
+
+                <div class="status-box">
+
+                    <div class="form-check m-0">
+
+                        <input
+                            type="checkbox"
+                            class="form-check-input"
+                            id="statusPago"
+                            name="status_pago"
+                            value="Pago"
+                            {% if transacao.pago %}
+                                checked
+                            {% endif %}
+                        >
+
+                        <label
+                            class="form-check-label"
+                            for="statusPago"
+                        >
+
+                            <i class="fa-solid fa-circle-check me-1"></i>
+
+                            Lançamento pago
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- BOTÕES -->
+
+            <div class="acoes-form">
+
+                <a
+                    href="{{ url_for('lancamentos') }}"
+                    class="btn-cancelar"
+                >
+
+                    <i class="fa-solid fa-xmark"></i>
+
+                    Cancelar
+
+                </a>
+
+
+                <button
+                    type="submit"
+                    class="btn-salvar"
+                >
+
+                    <i class="fa-solid fa-check"></i>
+
+                    Salvar alterações
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,31 +1,153 @@
+/* Reset Básico */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+:root {
+    --bg-body: #f8fafc;
+    --sidebar-yellow: #facc15;
+    --sidebar-yellow-dark: #eab308;
+    --card-bg: #ffffff;
+    --text-dark: #0f172a;
+    --text-muted: #64748b;
+    --border-color: #f1f5f9;
+}
+
 body {
-    font-family: Arial, sans-serif;
-
+    background-color: var(--bg-body);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--text-dark);
     min-height: 100vh;
+}
 
+/* --- SIDEBAR --- */
+.sidebar {
+    background-color: var(--sidebar-yellow);
+    min-height: 100vh;
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    font-size: 1.25rem;
+    color: #000;
+}
+
+.brand-icon {
+    background: #000;
+    color: var(--sidebar-yellow);
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.sidebar .nav-link {
+    color: #000;
+    font-weight: 600;
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.sidebar .nav-link.active {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+.sidebar .nav-link:hover:not(.active) {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* --- ESTRUTURA E CARDS --- */
+.main-content {
+    padding: 32px;
+}
+
+.custom-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.icon-badge {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+/* --- BADGES & CATEGORIAS --- */
+.badge-status {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.badge-status.pago { background: #dcfce7; color: #15803d; }
+.badge-status.pendente { background: #fef3c7; color: #b45309; }
+
+.badge-tipo-receita { background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.75rem; }
+.badge-tipo-despesa { background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.75rem; }
+
+.badge-cat {
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.cat-trabalho { background: #fef3c7; color: #92400e; }
+.cat-alimentacao { background: #ffedd5; color: #c2410c; }
+.cat-casa { background: #dbeafe; color: #1e40af; }
+.cat-transporte { background: #f3e8ff; color: #6b21a8; }
+.cat-lazer { background: #dcfce7; color: #166534; }
+.cat-saude { background: #ffe4e6; color: #9f1239; }
+
+.progress-custom {
+    height: 8px;
+    border-radius: 10px;
+    background-color: #f1f5f9;
+}
+
+/* --- TELA DE LOGIN / CADASTRO --- */
+.login-body {
     display: flex;
     justify-content: center;
     align-items: center;
-
-    background: #f4f6f8;
+    min-height: 100vh;
+    background: var(--bg-body);
 }
 
 .login-container {
     width: 400px;
-
     padding: 40px;
-
     background: white;
-
-    border-radius: 15px;
-
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
 }
 
 .logo {
@@ -34,13 +156,14 @@ body {
 }
 
 .logo h1 {
-    font-size: 32px;
-    color: #2563eb;
-    margin-bottom: 8px;
+    font-size: 28px;
+    color: #000000;
+    font-weight: 800;
+    margin-bottom: 6px;
 }
 
 .logo p {
-    color: #666;
+    color: var(--text-muted);
     font-size: 14px;
 }
 
@@ -52,72 +175,58 @@ form {
 .campo {
     display: flex;
     flex-direction: column;
-
     margin-bottom: 20px;
 }
 
 .campo label {
     margin-bottom: 7px;
-
-    font-weight: bold;
-
-    color: #333;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-dark);
 }
 
 .campo input {
-    padding: 13px;
-
-    border: 1px solid #ccc;
-
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
-
     font-size: 15px;
-
     outline: none;
-}
-
-.campo input:focus {
-    border-color: #2563eb;
-}
-
-button {
-    padding: 13px;
-
-    border: none;
-
-    border-radius: 8px;
-
-    background: #2563eb;
-
-    color: white;
-
-    font-size: 16px;
-
-    font-weight: bold;
-
-    cursor: pointer;
-
     transition: 0.2s;
 }
 
-button:hover {
-    background: #1d4ed8;
+.campo input:focus {
+    border-color: #000000;
+}
+
+.btn-primary-custom {
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: #000000;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-primary-custom:hover {
+    background: #1e293b;
 }
 
 .cadastro {
     text-align: center;
-
     margin-top: 25px;
-
-    color: #666;
-
+    color: var(--text-muted);
     font-size: 14px;
 }
 
 .cadastro a {
-    color: #2563eb;
-
+    color: #000000;
     text-decoration: none;
+    font-weight: 700;
+}
 
-    font-weight: bold;
+.cadastro a:hover {
+    text-decoration: underline;
 }
