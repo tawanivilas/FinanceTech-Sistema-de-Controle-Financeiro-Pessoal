@@ -1,172 +1,409 @@
-# FinanceTech – Sistema de Controle Financeiro Pessoal
+# 💰 FinanceTech – Sistema de Controle Financeiro Pessoal
 
-##  Sobre o projeto
+##  Sobre o Projeto
 
-O **FinanceTech – Sistema de Controle Financeiro Pessoal** é um sistema desenvolvido para a disciplina de **Produto de Software**.
+O **FinanceTech – Sistema de Controle Financeiro Pessoal** é uma aplicação web desenvolvida para a disciplina de **Produto de Software**.
 
-O projeto tem como objetivo auxiliar o usuário no **controle, organização e acompanhamento de sua vida financeira**, permitindo registrar receitas e despesas, acompanhar lançamentos e visualizar informações sobre suas finanças.
+O sistema tem como objetivo auxiliar o usuário na **organização, acompanhamento e gestão de sua vida financeira**, permitindo registrar receitas e despesas, organizar lançamentos por categorias, acompanhar indicadores financeiros e definir metas pessoais.
 
-A proposta é oferecer uma ferramenta simples e organizada para ajudar o usuário a **entender melhor seu orçamento, controlar seus gastos e acompanhar sua situação financeira**.
-
----
-
-Com o FinanceTech, o usuário poderá:
-
-* 🔐 Acessar sua conta por meio de login e senha;
-* 👤 Realizar seu cadastro;
-* 💰 Cadastrar receitas;
-* 💸 Cadastrar despesas;
-* 🏷️ Categorizar despesas;
-* ✏️ Editar lançamentos;
-* 🗑️ Excluir lançamentos;
-* 📋 Listar suas movimentações financeiras;
-* 📊 Acompanhar o total de receitas, despesas e saldo;
-* 📈 Visualizar informações financeiras por meio de gráficos;
-* 🔎 Filtrar lançamentos por período.
+A aplicação possui uma interface web responsiva, autenticação de usuários, gerenciamento de lançamentos financeiros, gráficos para análise dos gastos e acompanhamento do progresso de metas.
 
 ---
 
-# 🚀 Entregas do projeto
+## 🎯 Objetivos do Sistema
 
-## AC1 – Autenticação e Cadastro
+O FinanceTech foi desenvolvido com os seguintes objetivos:
 
-Nesta etapa foram desenvolvidas as funcionalidades básicas de acesso ao sistema e cadastro de usuários.
-
-### Funcionalidades
-
-* Tela de Login;
-* Tela de Cadastro;
-* Cadastro de usuários;
-* Acesso ao sistema utilizando e-mail e senha.
-
----
-
-## AC2 – Controle de receitas e despesas
-
-Nesta etapa foi desenvolvido o controle dos lançamentos financeiros.
-
-### Funcionalidades
-
-* Cadastrar receita;
-* Cadastrar despesa;
-* Editar lançamento;
-* Excluir lançamento.
+* Facilitar o controle das finanças pessoais;
+* Centralizar receitas e despesas em um único sistema;
+* Organizar despesas por categorias;
+* Permitir o acompanhamento do saldo financeiro;
+* Facilitar a consulta do histórico de movimentações;
+* Apresentar informações financeiras por meio de gráficos;
+* Permitir a criação e acompanhamento de metas financeiras;
+* Registrar aportes realizados nas metas;
+* Oferecer uma interface simples e intuitiva para o usuário.
 
 ---
 
-## AC3 – Organização e acompanhamento financeiro
+# 🚀 Funcionalidades
 
-Nesta etapa o sistema passou a apresentar as movimentações financeiras de forma organizada, permitindo ao usuário acompanhar sua situação financeira.
+O desenvolvimento do FinanceTech foi dividido em quatro entregas contínuas (**Avaliações Continuadas – ACs**).
 
-### Funcionalidades
+## 🔹 AC1 – Autenticação e Entradas
 
-* Listar lançamentos;
-* Categorizar despesas;
-* Exibir o total de receitas;
-* Exibir o total de despesas;
-* Exibir o saldo.
+* [x] **Criar Conta**
 
----
+  * Cadastro de novos usuários;
+  * Validação dos dados informados;
+  * Armazenamento seguro das senhas.
 
-## AC4 – Relatórios e visualização financeira
+* [x] **Fazer Login**
 
-Nesta etapa foram adicionados recursos para facilitar a análise das informações financeiras.
+  * Autenticação de usuários cadastrados;
+  * Controle de sessão;
+  * Proteção das áreas internas do sistema.
 
-### Funcionalidades
+* [x] **Registrar Receitas**
 
-* Despesas por categoria;
-* Gráfico mensal de movimentações;
-* Filtro de lançamentos por período.
-
----
-
-# 🛠️ Tecnologias utilizadas
-
-### Front-end
-
-* HTML
-* CSS
-* JavaScript
-* Bootstrap
-
-### Back-end
-
-* Python
-* Flask
-
-### Banco de dados
-
-* MySQL
-* Docker
-
-### Controle de versão
-
-* Git
-* GitHub
+  * Cadastro de entradas financeiras;
+  * Descrição da receita;
+  * Valor;
+  * Data do lançamento.
 
 ---
 
-# 📂 Estrutura do projeto
+## 🔹 AC2 – Saídas e Categorização
+
+* [x] **Registrar Despesas**
+
+  * Cadastro de saídas financeiras;
+  * Descrição;
+  * Valor;
+  * Data;
+  * Categoria.
+
+* [x] **Organizar Despesas por Categoria**
+
+  * Associação de despesas às categorias;
+  * Organização dos gastos;
+  * Facilitação da análise financeira.
+
+---
+
+## 🔹 AC3 – Gerenciamento de Lançamentos
+
+* [x] **Editar Lançamentos**
+
+  * Alteração de receitas e despesas;
+  * Atualização de valores;
+  * Alteração de datas;
+  * Alteração de descrições e categorias.
+
+* [x] **Excluir Lançamentos**
+
+  * Exclusão de registros financeiros;
+  * Atualização automática dos indicadores financeiros.
+
+---
+
+## 🔹 AC4 – Painel de Controle, Gráficos e Metas
+
+* [x] **Consultar Movimentações**
+
+  * Visualização do histórico de lançamentos;
+  * Consulta de receitas e despesas;
+  * Filtros para facilitar a localização dos registros.
+
+* [x] **Acompanhar Indicadores**
+
+  * Total de receitas;
+  * Total de despesas;
+  * Saldo atual;
+  * Atualização dos valores conforme os lançamentos.
+
+* [x] **Análise Gráfica**
+
+  * Visualização dos gastos por categoria;
+  * Representação gráfica das movimentações;
+  * Auxílio na identificação dos principais gastos.
+
+* [x] **Filtros**
+
+  * Filtro por período;
+  * Filtro por categoria;
+  * Filtro por tipo de lançamento.
+
+* [x] **Metas Financeiras**
+
+  * Cadastro de metas pessoais;
+  * Definição de valor-alvo;
+  * Acompanhamento do valor acumulado;
+  * Cálculo do progresso em porcentagem.
+
+* [x] **Aportes**
+
+  * Registro de valores destinados às metas;
+  * Atualização do progresso da meta;
+  * Acompanhamento do valor acumulado.
+
+---
+
+# 🖥️ Principais Telas
+
+O sistema possui as seguintes telas principais:
+
+### 🔐 1. Login e Cadastro
+
+Área responsável pela autenticação dos usuários.
+
+O usuário pode criar sua conta e posteriormente acessar o sistema utilizando suas credenciais.
+
+### 📊 2. Dashboard
+
+Painel principal do Finance Tech.
+
+Apresenta:
+
+* Total de receitas;
+* Total de despesas;
+* Saldo atual;
+* Gráficos;
+* Informações sobre lançamentos recentes;
+* Resumo da situação financeira.
+
+### 💰 3. Lançamentos
+
+Tela destinada ao gerenciamento das movimentações financeiras.
+
+Permite:
+
+* Cadastrar receitas
+* Cadastrar despesas
+* Editar lançamentos
+* Excluir lançamentos
+* Consultar histórico
+* Aplicar filtros.
+
+### 🎯 4. Metas Financeiras
+
+Tela destinada ao acompanhamento dos objetivos financeiros.
+
+Permite:
+
+* Criar uma meta
+* Definir valor-alvo
+* Registrar aportes
+* Visualizar valor acumulado
+* Acompanhar o percentual de progresso.
+
+---
+
+# 🛠️ Tecnologias Utilizadas
+
+## Backend
+
+* **Python**
+* **Flask**
+* **Werkzeug**
+
+## Frontend
+
+* **HTML5**
+* **CSS3**
+* **JavaScript**
+* **Bootstrap 5**
+* **FontAwesome**
+* **Jinja2**
+
+## Banco de Dados
+
+* **TiDB Cloud**
+* Compatibilidade com **MySQL**
+* **MySQL Connector/Python**
+
+## Deploy
+
+* **Render**
+
+## Controle de Versão
+
+* **Git**
+* **GitHub**
+
+---
+
+# 🏗️ Arquitetura do Projeto
+
+O FinanceTech utiliza uma arquitetura baseada na separação entre interface, aplicação e banco de dados.
+
+```text
+┌─────────────────────────────┐
+│          FRONTEND           │
+│                             │
+│ HTML + CSS + JavaScript     │
+│ Bootstrap + FontAwesome     │
+└──────────────┬──────────────┘
+               │
+               ▼
+┌─────────────────────────────┐
+│           BACKEND           │
+│                             │
+│ Python + Flask              │
+│ Rotas + Regras de negócio   │
+│ Autenticação + Sessões      │
+└──────────────┬──────────────┘
+               │
+               ▼
+┌─────────────────────────────┐
+│        BANCO DE DADOS       │
+│                             │
+│ TiDB Cloud / MySQL          │
+│ Usuários + Lançamentos      │
+│ Categorias + Metas          │
+└─────────────────────────────┘
+```
+
+---
+
+# 📂 Estrutura do Projeto
+
+A estrutura principal do projeto segue o padrão de uma aplicação Flask:
 
 ```text
 FinanceTech-Sistema-de-Controle-Financeiro-Pessoal/
 │
 ├── app.py
 ├── requirements.txt
-├── docker-compose.yml
 ├── README.md
 │
 ├── templates/
+│   ├── base.html
 │   ├── login.html
 │   ├── cadastro.html
-│   └── ...
+│   ├── dashboard.html
+│   ├── lancamentos.html
+│   └── metas.html
 │
 ├── static/
 │   ├── css/
+│   │   └── style.css
+│   │
 │   ├── js/
-│   └── ...
+│   │   └── script.js
+│   │
+│   └── img/
 │
-└── database/
-    └── ...
+└── ...
 ```
-
-
-
-# 👤 Principais recursos
-
-O usuário poderá utilizar o sistema para:
-
-* Criar sua conta;
-* Fazer login;
-* Registrar receitas;
-* Registrar despesas;
-* Organizar despesas por categoria;
-* Editar lançamentos;
-* Excluir lançamentos;
-* Consultar suas movimentações;
-* Acompanhar receitas, despesas e saldo;
-* Analisar seus gastos por meio de gráficos e filtros.
 
 ---
 
+# 🗄️ Banco de Dados
 
-# 🌐 Acesso ao projeto
+O sistema utiliza um banco de dados relacional compatível com MySQL.
 
-### 💻 Repositório GitHub
+Entre os principais dados armazenados estão:
 
-**FinanceTech – Sistema de Controle Financeiro Pessoal**
+### Usuários
+
+Responsáveis pelo acesso ao sistema.
+
+Principais informações:
+
+* ID;
+* Nome;
+* E-mail;
+* Senha;
+* Data de cadastro.
+
+### Categorias
+
+Utilizadas para organizar os lançamentos financeiros.
+
+### Transações
+
+Armazenam as receitas e despesas registradas pelo usuário.
+
+Entre as informações estão:
+
+* Descrição;
+* Valor;
+* Tipo;
+* Data;
+* Categoria;
+* Usuário responsável.
+
+### Metas
+
+Armazenam os objetivos financeiros cadastrados pelo usuário.
+
+As metas possuem informações como:
+
+* Nome da meta;
+* Valor-alvo;
+* Valor acumulado;
+* Progresso;
+* Aportes realizados.
+
+---
+
+# 🌐 Acesso ao Projeto
+
+### 💻 GitHub
+
+**Repositório:**
 
 https://github.com/tawanivilas/FinanceTech-Sistema-de-Controle-Financeiro-Pessoal
 
-### 🚀 Sistema online
+### 🚀 Sistema Online
 
-> 🔗 O link do sistema online será adicionado quando a aplicação estiver hospedada.
+**Aplicação publicada:**
+
+https://financetech-sistema-de-controle.onrender.com
+
+#
 
 ---
 
+# 📈 Evolução do Produto
 
+O desenvolvimento foi realizado de forma incremental, permitindo que cada AC adicionasse novas funcionalidades ao sistema.
 
+```text
+AC1
+│
+├── Cadastro
+├── Login
+└── Receitas
+      │
+      ▼
+AC2
+│
+├── Despesas
+└── Categorias
+      │
+      ▼
+AC3
+│
+├── Editar
+└── Excluir
+      │
+      ▼
+AC4
+│
+├── Dashboard
+├── Indicadores
+├── Gráficos
+├── Filtros
+├── Metas
+└── Aportes
+```
 
+#
+
+---
+
+# 👨‍💻 Projeto
+
+**FinanceTech – Sistema de Controle Financeiro Pessoal**
+
+Desenvolvido para a disciplina de **Produto de Software**.
+
+**Tecnologias principais:**
+
+`Python` · `Flask` · `HTML` · `CSS` · `JavaScript` · `Bootstrap` · `MySQL/TiDB Cloud` · `Render` · `GitHub`
+
+---
+
+## 📌 Status do Projeto
+
+**Projeto concluído**, contemplando as funcionalidades planejadas para as quatro avaliações continuadas:
+
+* ✅ AC1 – Autenticação e Entradas
+* ✅ AC2 – Saídas e Categorização
+* ✅ AC3 – Gerenciamento de Lançamentos
+* ✅ AC4 – Dashboard, Gráficos e Metas
 
 
 
